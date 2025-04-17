@@ -52,12 +52,16 @@ class QQ
         $result = $response->getBody()->getContents();
         $sig = $this->getCookieValue('qrsig');
         $cookies = $this->cookie->toArray();
+        $cookie = [];
+        foreach ($cookies as $value) {
+            $cookie[$value['Name']] = $value['Value'];
+        }
         return Response::json(0, '获取成功', [
             'qrSig' => $sig,
             'image' => base64_encode($result),
             'token' => $this->getQrToken($sig),
             'loginSig' => $this->getCookieValue('pt_login_sig'),
-            'cookie' => json_encode($cookies),
+            'cookie' => json_encode($cookie),
         ]);
     }
 
@@ -98,12 +102,8 @@ class QQ
         try {
             $cookie = Request::param('cookie');
             $cookies = json_decode($cookie, true);
-            $cookie = [];
-            foreach ($cookies as $value) {
-                $cookie[$value['Name']] = $value['Value'];
-            }
-            $cookie['qrsig'] = $qrSig;
-            $this->cookie = $this->cookie::fromArray($cookie, '.ptlogin2.qq.com');
+            $cookies['qrsig'] = $qrSig;
+            $this->cookie = $this->cookie::fromArray($cookies, '.ptlogin2.qq.com');
             $response = $this->client->request('GET', 'https://ssl.ptlogin2.qq.com/ptqrlogin', [
                 'query' => [
                     'u1' => 'https://graph.qq.com/oauth2.0/login_jump',
