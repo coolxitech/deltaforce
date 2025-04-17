@@ -1,0 +1,7 @@
+DeltaForce API 的许可信息
+
+本项目包含以下两种许可的代码：
+
+1. 原创代码（作者：酷曦科技）： 根据 GNU 通用公共许可证第3版（GPLv3）授权。 详情请见 GPL-3.0.txt 文件。 版权所有 (C) 2025 酷曦科技
+
+2. ThinkPHP 框架（由上海顶想信息科技有限公司开发）： 根据 Apache 许可证 2.0 版授权。 详情请见 APACHE-2.0.txt 文件。 版权所有 (C) 2006-2025 ThinkPHP (http://thinkphp.cn) ThinkPHP® 是上海顶想信息科技有限公司的注册商标。
