@@ -9,7 +9,7 @@ DeltaForce API
 
 ## 文档
 
-[完全开发手册](https://doc.thinkphp.cn)
+请查看WIKI
 
 
 ## 安装
