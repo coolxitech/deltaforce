@@ -21,7 +21,6 @@ class QQ
         $this->client = new Client([
             'cookies' => $this->cookie,
             'allow_redirects' => false,
-            'proxy' => 'http://127.0.0.1:9001',
             'verify' => false,
             'version' => 2.0,
         ]);
