@@ -1,17 +1,13 @@
 <?php
-// +----------------------------------------------------------------------
-// | ThinkPHP [ WE CAN DO IT JUST THINK ]
-// +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
-// +----------------------------------------------------------------------
-// | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
-// +----------------------------------------------------------------------
-// | Author: liu21st <liu21st@gmail.com>
-// +----------------------------------------------------------------------
+
 use think\facade\Route;
 
-Route::get('think', function () {
-    return 'hello,ThinkPHP8!';
+Route::group('qq', function () {
+    Route::rule('sig', 'QQ/getQrSig');
+    Route::rule('status', 'QQ/getAction');
+    Route::rule('access', 'QQ/getAccessToken');
 });
 
-Route::get('hello/:name', 'index/hello');
+Route::rule('game', function () {
+    Route::rule('data', 'Game/getData');
+});
