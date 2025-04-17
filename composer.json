@@ -1,29 +1,26 @@
 {
-    "name": "topthink/think",
-    "description": "the new thinkphp framework",
+    "name": "coolxitech/deltaforce",
+    "description": "三角洲行动API",
     "type": "project",
     "keywords": [
-        "framework",
+        "deltaforce",
         "thinkphp",
-        "ORM"
+        "api"
     ],
-    "homepage": "https://www.thinkphp.cn/",
+    "homepage": "https://www.kuxi.tech/",
     "license": "Apache-2.0",
     "authors": [
         {
-            "name": "liu21st",
-            "email": "liu21st@gmail.com"
-        },
-        {
-            "name": "yunwuxin",
-            "email": "448901948@qq.com"
+            "name": "酷曦科技",
+            "email": "admin@kuxi.tech"
         }
     ],
     "require": {
         "php": ">=8.0.0",
         "topthink/framework": "^8.0",
         "topthink/think-orm": "^3.0|^4.0",
-        "topthink/think-filesystem": "^2.0"
+        "topthink/think-filesystem": "^2.0",
+        "guzzlehttp/guzzle": "^7.9"
     },
     "require-dev": {
         "topthink/think-dumper": "^1.0",
