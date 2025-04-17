@@ -1,0 +1,67 @@
+name: Build and Release PHP Project
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 检出代码
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 设置 PHP 环境
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2' # 可根据你的项目需要调整 PHP 版本
+          extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql
+          tools: composer
+
+      # 缓存 Composer 依赖
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      # 安装 Composer 依赖
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-dev --optimize-autoloader
+
+      # 运行测试（可选，假设你有 PHPUnit 测试）
+      - name: Run tests
+        run: vendor/bin/phpunit
+        if: always() # 即使没有测试文件也不会失败
+
+      # 创建构建目录并打包
+      - name: Create build artifact
+        run: |
+          mkdir -p build
+          cp -r src composer.json composer.lock vendor build/
+          zip -r release.zip build/
+
+      # 上传构建产物
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: php-release
+          path: release.zip
+
+      # 创建 GitHub Release
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}
+          name: Release ${{ github.run_number }}
+          body: Automated release for commit ${{ github.sha }}
+          draft: false
+          prerelease: false
+          files: release.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
