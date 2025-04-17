@@ -18,8 +18,8 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2' # 可根据你的项目需要调整 PHP 版本
-          extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql
+          php-version: '8.0' # 可根据你的项目需要调整 PHP 版本
+          extensions: fileinfo,mbstring
           tools: composer
 
       # 缓存 Composer 依赖
