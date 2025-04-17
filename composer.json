@@ -24,7 +24,8 @@
     },
     "require-dev": {
         "topthink/think-dumper": "^1.0",
-        "topthink/think-trace": "^1.0"
+        "topthink/think-trace": "^1.0",
+        "friendsofphp/php-cs-fixer": "^3.75"
     },
     "autoload": {
         "psr-4": {
