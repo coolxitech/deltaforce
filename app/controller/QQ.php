@@ -97,9 +97,10 @@ class QQ
         return $hash & 2147483647;
     }
 
-    public function getAction(string $qrToken, string $qrSig, string $loginSig, string $cookie): Json
+    public function getAction(string $qrToken, string $qrSig, string $loginSig): Json
     {
         try {
+            $cookie = Request::param('cookie');
             $cookies = json_decode($cookie, true);
             $cookie = [];
             foreach ($cookies as $value) {
