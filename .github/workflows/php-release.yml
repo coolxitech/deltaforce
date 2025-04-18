@@ -4,10 +4,20 @@ on:
   push:
     branches:
       - master
+  workflow_dispatch: # 允许手动触发
+
+concurrency:
+  group: "${{ github.workflow }} - ${{ github.head_ref || github.ref }}"
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   build-release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      releases: write
+    strategy:
+      fail-fast: false # 步骤失败不立即终止
 
     steps:
       # 检出代码
@@ -18,8 +28,8 @@ jobs:
       - name: 设置 PHP 环境
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.0' # 可根据你的项目需要调整 PHP 版本
-          extensions: mbstring, fileinfo
+          php-version: '8.0' # 可根据 ThinkPHP 版本调整
+          extensions: mbstring, curl, json, openssl, fileinfo
           tools: composer
 
       # 缓存 Composer 依赖
@@ -27,39 +37,50 @@ jobs:
         uses: actions/cache@v4
         with:
           path: vendor
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
+          cache-on-failure: true # 即使步骤失败也缓存
 
       # 安装 Composer 依赖
       - name: 安装依赖
         run: composer install --prefer-dist --no-progress --no-dev --optimize-autoloader
 
-      # 获取当前 UTC 时间戳
-      - name: 获取当前时间戳
-        id: timestamp
-        run: echo "timestamp=$(date -u +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
+      # 获取版本号
+      - name: 获取版本号
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+          echo "VERSION=$(jq -r '.version' composer.json)" >> $GITHUB_ENV
+          echo "BUILDTIME=$(TZ=Asia/Shanghai date)" >> $GITHUB_ENV
 
-      # 创建构建目录并打包
+      # 创建构建产物
       - name: 创建构建产物
         run: |
-          zip -r release-${{ steps.timestamp.outputs.timestamp }}.zip . -x "runtime/*"
+          zip -r release-${{ env.VERSION }}-${{ github.run_id }}.zip . -x "runtime/*"
+
+      # 列出打包文件
+      - name: 列出打包文件
+        run: unzip -l release-${{ env.VERSION }}-${{ github.run_id }}.zip
+        if: always() # 即使失败也运行，便于调试
 
       # 上传构建产物
       - name: 上传构建产物
         uses: actions/upload-artifact@v4
         with:
-          name: php-release-${{ steps.timestamp.outputs.timestamp }}
-          path: release-${{ github.sha }}.zip
+          name: php-release-${{ env.VERSION }}-${{ github.run_id }}
+          path: release-${{ env.VERSION }}-${{ github.run_id }}.zip
 
-      # 创建 GitHub Release
+      # 创建 GitHub 发布
       - name: 创建 GitHub 发布
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.timestamp.outputs.timestamp }}
-          name: Release ${{ github.sha }}
-          body: 自动构建发布提交版 ${{ github.sha }} 发布时间为 ${{ steps.timestamp.outputs.timestamp }}
+          tag_name: v${{ env.VERSION }}
+          name: DeltaForce API v${{ env.VERSION }}
+          body: |
+            Automated release for commit ${{ github.sha }} at ${{ env.BUILDTIME }}.
+            Built with ThinkPHP framework.
           draft: false
           prerelease: false
-          files: release-${{ github.sha }}.zip
+          files: release-${{ env.VERSION }}-${{ github.run_id }}.zip
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN || github.token }}
