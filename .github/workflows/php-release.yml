@@ -55,7 +55,7 @@ jobs:
       # 创建构建产物
       - name: 创建构建产物
         run: |
-          zip -r release-${{ env.VERSION }}-${{ github.run_id }}.zip . -x "runtime/*"
+          zip -r release-${{ env.VERSION }}-${{ github.run_id }}.zip . -x "runtime/*" ".git/*" ".github/*"
 
       # 列出打包文件
       - name: 列出打包文件
