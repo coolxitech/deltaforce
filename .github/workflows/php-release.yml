@@ -42,7 +42,7 @@ jobs:
       # 创建构建目录并打包
       - name: 创建构建产物
         run: |
-          zip -r release-${{ steps.timestamp.outputs.timestamp }}.zip app config extend public route vendor composer.json composer.lock -x "runtime/*"
+          zip -r release-${{ steps.timestamp.outputs.timestamp }}.zip . -x "runtime/*"
 
       # 上传构建产物
       - name: 上传构建产物
@@ -60,6 +60,6 @@ jobs:
           body: 自动构建发布提交版 ${{ github.sha }} 发布时间为 ${{ steps.timestamp.outputs.timestamp }}
           draft: false
           prerelease: false
-          files: release-${{ steps.timestamp.outputs.timestamp }}.zip
+          files: release-${{ github.sha }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
