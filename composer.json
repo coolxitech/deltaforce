@@ -43,5 +43,13 @@
             "@php think service:discover",
             "@php think vendor:publish"
         ]
-    }
+    },
+    "repositories": [
+        {
+            "description": "阿里云镜像",
+            "type": "composer",
+            "url": "https://mirrors.aliyun.com/composer/",
+            "canonical": false
+        }
+    ]
 }
