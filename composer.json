@@ -62,12 +62,6 @@
             "type": "composer",
             "url": "https://mirrors.huaweicloud.com/repository/php/",
             "canonical": false
-        },
-        {
-            "description": "上海交通大学镜像",
-            "type": "composer",
-            "url": "https://mirrors.sjtug.sjtu.edu.cn/composer/",
-            "canonical": false
         }
     ]
 }
