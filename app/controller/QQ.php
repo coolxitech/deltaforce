@@ -61,7 +61,7 @@ class QQ
             'image' => base64_encode($result),
             'token' => $this->getQrToken($sig),
             'loginSig' => $this->getCookieValue('pt_login_sig'),
-            'cookie' => json_encode($cookie),
+            'cookie' => $cookie,
         ]);
     }
 
@@ -138,21 +138,26 @@ class QQ
             if ($result == '') {
                 throw new Exception('qrSig参数不正确', -1);
             }
-            if (str_contains($result, "ptuiCB('65'")) {
-                throw new Exception('二维码失效', -2);
+            preg_match("/ptuiCB\s*\(\s*'(.*?)'\s*,\s*'(.*?)'\s*,\s*'(.*?)'\s*,\s*'(.*?)'\s*,\s*'(.*?)'\s*,\s*'(.*?)'\s*\)/u", $result, $matches);
+            if ($matches[1] == '65') {
+                throw new Exception($matches[5], -2);
             }
-            if (str_contains($result, "ptuiCB('66'")) {
-                throw new Exception('二维码未失效', 1);
+            if ($matches[1] == '66') {
+                throw new Exception($matches[5], 1);
             }
-            if (str_contains($result, "ptuiCB('67'")) {
-                throw new Exception('已扫码,待确认', 2);
+            if ($matches[1] == '67') {
+                throw new Exception($matches[5], 2);
+            }
+            if ($matches[1] == '86') {
+                throw new Exception($matches[5], -3);
+            }
+            if ($matches[1] != '0') {
+                throw new Exception($matches[5], -4);
             }
         } catch (\Exception $e) {
             return Response::json($e->getCode(), $e->getMessage());
         }
-        $result = str_replace(["ptuiCB(","'",")"], "", $result);
-        $data = explode(",", $result);
-        $q_url = $data[2];
+        $q_url = $matches[3];
         $this->client->request('GET', $q_url, [
             'cookies' => $this->cookie,
         ]);
@@ -171,6 +176,10 @@ class QQ
     public function getAccessToken(): Json
     {
         $params = Request::param('cookie');
+        if (str_contains($params, '\\')) {
+            $params = stripslashes($params);
+        }
+        $params = json_decode($params, true);
         $this->cookie = $this->cookie::fromArray($params, '.qq.com');
         $response = $this->client->request('POST', 'https://graph.qq.com/oauth2.0/authorize', [
             'form_params' => [
