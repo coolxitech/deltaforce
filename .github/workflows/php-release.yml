@@ -6,6 +6,8 @@ on:
       - master
   workflow_dispatch: # 允许手动触发
 
+permissions: write-all
+
 concurrency:
   group: "${{ github.workflow }} - ${{ github.head_ref || github.ref }}"
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
@@ -15,9 +17,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      releases: write
-    strategy:
-      fail-fast: false # 步骤失败不立即终止
 
     steps:
       # 检出代码
