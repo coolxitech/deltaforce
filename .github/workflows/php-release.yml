@@ -1,4 +1,4 @@
-name: Build and Release PHP Project
+name: 构建并发布 PHP 项目
 
 on:
   push:
@@ -6,24 +6,24 @@ on:
       - master
 
 jobs:
-  build-and-release:
+  构建与发布:
     runs-on: ubuntu-latest
 
     steps:
       # 检出代码
-      - name: Checkout code
+      - name: 检出代码
         uses: actions/checkout@v4
 
       # 设置 PHP 环境
-      - name: Setup PHP
+      - name: 设置 PHP 环境
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.0' # 可根据你的项目需要调整 PHP 版本
-          extensions: fileinfo,mbstring
+          extensions: mbstring, fileinfo
           tools: composer
 
       # 缓存 Composer 依赖
-      - name: Cache Composer dependencies
+      - name: 缓存 Composer 依赖
         uses: actions/cache@v4
         with:
           path: vendor
@@ -31,37 +31,37 @@ jobs:
           restore-keys: ${{ runner.os }}-composer-
 
       # 安装 Composer 依赖
-      - name: Install dependencies
+      - name: 安装依赖
         run: composer install --prefer-dist --no-progress --no-dev --optimize-autoloader
 
-      # 运行测试（可选，假设你有 PHPUnit 测试）
-      - name: Run tests
-        run: vendor/bin/phpunit
-        if: always() # 即使没有测试文件也不会失败
+      # 获取当前 UTC 时间戳
+      - name: 获取当前时间戳
+        id: timestamp
+        run: echo "timestamp=$(date -u +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
 
       # 创建构建目录并打包
-      - name: Create build artifact
+      - name: 创建构建产物
         run: |
           mkdir -p build
           cp -r src composer.json composer.lock vendor build/
-          zip -r release.zip build/
+          zip -r release-${{ steps.timestamp.outputs.timestamp }}.zip build/
 
       # 上传构建产物
-      - name: Upload artifact
+      - name: 上传构建产物
         uses: actions/upload-artifact@v4
         with:
-          name: php-release
-          path: release.zip
+          name: php-release-${{ steps.timestamp.outputs.timestamp }}
+          path: release-${{ steps.timestamp.outputs.timestamp }}.zip
 
       # 创建 GitHub Release
-      - name: Create GitHub Release
+      - name: 创建 GitHub 发布
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ github.run_number }}
-          name: Release ${{ github.run_number }}
-          body: Automated release for commit ${{ github.sha }}
+          tag_name: v${{ steps.timestamp.outputs.timestamp }}
+          name: Release ${{ steps.timestamp.outputs.timestamp }}
+          body: Automated release for commit ${{ github.sha }} at ${{ steps.timestamp.outputs.timestamp }}
           draft: false
           prerelease: false
-          files: release.zip
+          files: release-${{ steps.timestamp.outputs.timestamp }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
