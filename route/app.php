@@ -8,6 +8,6 @@ Route::group('qq', function () {
     Route::rule('access', 'QQ/getAccessToken');
 });
 
-Route::rule('game', function () {
+Route::group('game', function () {
     Route::rule('data', 'Game/getData');
 });
