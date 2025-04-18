@@ -185,7 +185,7 @@ class Game
         } else {
             $gameData['PlayerAssets']['userData'] = $data['jData']['userData'];
             $gameData['PlayerAssets']['weponData'] = $data['jData']['weponData'];
-            $gameData['PlayerAssets']['dCData'] = $data['jData']['dCData'][0];
+            $gameData['PlayerAssets']['dCData'] = $data['jData']['dCData'][0] ?? [];
         }
 
         // 三角劵数量
