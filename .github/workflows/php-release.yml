@@ -76,8 +76,7 @@ jobs:
           tag_name: v${{ env.VERSION }}
           name: DeltaForce API v${{ env.VERSION }}
           body: |
-            Automated release for commit ${{ github.sha }} at ${{ env.BUILDTIME }}.
-            Built with ThinkPHP framework.
+            自动构建提交版 ${{ github.sha }} 构建时间:${{ env.BUILDTIME }}.
           draft: false
           prerelease: false
           files: release-${{ env.VERSION }}-${{ github.run_id }}.zip
