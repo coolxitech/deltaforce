@@ -59,7 +59,7 @@ jobs:
         with:
           tag_name: v${{ steps.timestamp.outputs.timestamp }}
           name: Release ${{ steps.timestamp.outputs.timestamp }}
-          body: Automated release for commit ${{ github.sha }} at ${{ steps.timestamp.outputs.timestamp }}
+          body: 自动构建发布提交版 ${{ github.sha }} 发布时间为 ${{ steps.timestamp.outputs.timestamp }}
           draft: false
           prerelease: false
           files: release-${{ steps.timestamp.outputs.timestamp }}.zip
