@@ -50,6 +50,24 @@
             "type": "composer",
             "url": "https://mirrors.aliyun.com/composer/",
             "canonical": false
+        },
+        {
+            "description": "腾讯云镜像",
+            "type": "composer",
+            "url": "https://mirrors.cloud.tencent.com/composer/",
+            "canonical": false
+        },
+        {
+            "description": "华为云镜像",
+            "type": "composer",
+            "url": "https://mirrors.huaweicloud.com/repository/php/",
+            "canonical": false
+        },
+        {
+            "description": "上海交通大学镜像",
+            "type": "composer",
+            "url": "https://mirrors.sjtug.sjtu.edu.cn/composer/",
+            "canonical": false
         }
     ]
 }
