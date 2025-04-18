@@ -203,6 +203,9 @@ class QQ
             'cookies' => $this->cookie,
         ]);
         preg_match('/code=(.*?)&/', $response->getHeaderLine('Location'), $matches);
+        if (!isset($matches[1])) { // 过期的Cookie会不返回带code的Location
+            return Response::json(-1, 'Cookie过期，请重新扫码登录');
+        }
         $qcCode = $matches[1];
         $this->client->request('GET', $response->getHeaderLine('Location'), [
             'cookies' => $this->cookie,
