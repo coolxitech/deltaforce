@@ -42,9 +42,7 @@ jobs:
       # 创建构建目录并打包
       - name: 创建构建产物
         run: |
-          mkdir -p build
-          cp -r app config extend public route runtime vendor composer.json composer.lock build/
-          zip -r release-${{ steps.timestamp.outputs.timestamp }}.zip build/ -x "build/runtime/*"
+          zip -r release-${{ steps.timestamp.outputs.timestamp }}.zip app config extend public route vendor composer.json composer.lock -x "runtime/*"
 
       # 上传构建产物
       - name: 上传构建产物
