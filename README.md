@@ -9,7 +9,7 @@ DeltaForce API
 
 ## 文档
 
-请查看WIKI
+[API文档](https://doc.apipost.net/docs/445c633fa47c000?locale=zh-cn)
 
 
 ## 安装
