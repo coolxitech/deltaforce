@@ -526,4 +526,81 @@ class Game
 
         return Response::json(0, '获取成功', $gameData);
     }
+
+    public function assets()
+    {
+        $openid = Request::param('openid');
+        $access_token = Request::param('access_token');
+        if (empty($openid) || empty($access_token)) {
+            return Response::json(-1, '缺少参数');
+        }
+        $cookie = CookieJar::fromArray([
+            'openid' => $openid,
+            'access_token' => $access_token,
+            'acctype' => 'qc',
+            'appid' => 101491592,
+        ], '.qq.com');
+
+        $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
+            'form_params' => [
+                'iChartId' => 318948,
+                'iSubChartId' => 318948,
+                'sIdeToken' => 'Plaqzy',
+            ],
+            'cookies' => $cookie,
+        ]);
+        $result = $response->getBody()->getContents();
+        $data = json_decode($result, true);
+        if ($data['ret'] != 0) {
+            return Response::json(-1, '获取失败,检查鉴权是否过期');
+        } else {
+            $gameData['userData'] = $data['jData']['userData'];
+            $gameData['weponData'] = $data['jData']['weponData'];
+            $gameData['dCData'] = $data['jData']['dCData'];
+        }
+
+        return Response::json(0, '获取成功', $gameData);
+    }
+
+    public function logs()
+    {
+        $openid = Request::param('openid');
+        $access_token = Request::param('access_token');
+        if (Request::param('type') == null || Request::param('type') == '') {
+            $type = 1;
+        } else {
+            $type = Request::param('type');
+        }
+
+        if (empty($openid) || empty($access_token)) {
+            return Response::json(-1, '缺少参数');
+        }
+        $cookie = CookieJar::fromArray([
+            'openid' => $openid,
+            'access_token' => $access_token,
+            'acctype' => 'qc',
+            'appid' => 101491592,
+        ], '.qq.com');
+        // 流水信息
+        $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
+            'form_params' => [
+                'iChartId' => 319386,
+                'iSubChartId' => 319386,
+                'sIdeToken' => 'zMemOt',
+                'type' => $type,
+            ],
+            'cookies' => $cookie,
+        ]);
+        $result = $response->getBody()->getContents();
+        $data = json_decode($result, true);
+        if ($data['ret'] != 0) {
+            return Response::json(-1, '获取失败,检查鉴权是否过期');
+        }
+
+        if ($type == 3) {
+            $data['jData']['data']['totalMoney'] = $data['jData']['data'][0]['totalMoney'];
+            unset($data['jData']['data'][0]);
+        }
+        return Response::json(0, '获取成功', $data['jData']['data']);
+    }
 }
