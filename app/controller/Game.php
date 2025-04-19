@@ -52,7 +52,7 @@ class Game
         ]);
         $result = $response->getBody()->getContents();
         $data = json_decode($result, true);
-        $gameData['matchList']['touchGold'] = $data['ret'] != 0 ? [] : $data['jData']['data'];
+        $gameData['matchList']['gun'] = $data['ret'] != 0 ? [] : $data['jData']['data'];
 
         // 全面战场战绩
         $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
@@ -67,7 +67,7 @@ class Game
         ]);
         $result = $response->getBody()->getContents();
         $data = json_decode($result, true);
-        $gameData['matchList']['battlefield'] = $data['ret'] != 0 ? [] : $data['jData']['data'];
+        $gameData['matchList']['operator'] = $data['ret'] != 0 ? [] : $data['jData']['data'];
 
         // 游戏配置信息
         $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
@@ -302,6 +302,7 @@ class Game
     {
         $openId = Request::param('openid');
         $accessToken = Request::param('access_token');
+        $seasonId = Request::param('season_id') ?? 0;
         if (empty($openId) || empty($accessToken)) {
             return Response::json(-1, '缺少参数');
         }
@@ -325,6 +326,7 @@ class Game
                 'iChartId' => 317814,
                 'iSubChartId' => 317814,
                 'sIdeToken' => 'QIRBwm',
+                'seasonid' => $seasonId,
             ],
             'cookies' => $cookie,
         ]);
