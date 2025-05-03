@@ -2,6 +2,7 @@
 
 namespace app\controller;
 
+use app\model\Access;
 use app\utils\Response;
 use Exception;
 use GuzzleHttp\Client;
@@ -23,6 +24,7 @@ class QQ
             'allow_redirects' => false,
             'verify' => false,
             'version' => 2.0,
+            'proxy' => 'http://127.0.0.1:9001',
         ]);
     }
 
@@ -158,6 +160,11 @@ class QQ
             return Response::json($e->getCode(), $e->getMessage());
         }
         $q_url = $matches[3];
+        preg_match('/uin=(.*?)&/', $q_url, $matches);
+        $qq = $matches[1];
+        $access = new Access();
+        $access->qq = $qq;
+
         $this->client->request('GET', $q_url, [
             'cookies' => $this->cookie,
         ]);
@@ -168,6 +175,8 @@ class QQ
                 $t_cookie[$value['Name']] = $value['Value'];
             }
         }
+        $access->cookie = json_encode($t_cookie);
+        $access->replace()->save();
         return Response::json(0, '登录成功', [
             'cookie' => $t_cookie,
         ]);
@@ -176,9 +185,22 @@ class QQ
     public function getAccessToken(): Json
     {
         $params = Request::param('cookie');
-        if (str_contains($params, '\\')) {
-            $params = stripslashes($params);
+        $qq = Request::param('qq');
+        if (!$qq && !$params) {
+            return Response::json(-1, 'QQ号或cookie参数必须填一个');
         }
+        if ($qq) {
+            $access = Access::where('qq', $qq)->find();
+            if ($access->isEmpty()) {
+                return Response::json(-2, '未找到该QQ号');
+            }
+            $params = $access->cookie;
+        } else {
+            if (str_contains($params, '\\')) { // 判断cookie字符串中有转义字符
+                $params = stripslashes($params); // 去除转义字符
+            }
+        }
+
         $params = json_decode($params, true);
         $this->cookie = $this->cookie::fromArray($params, '.qq.com');
         $response = $this->client->request('POST', 'https://graph.qq.com/oauth2.0/authorize', [
@@ -203,7 +225,7 @@ class QQ
             'cookies' => $this->cookie,
         ]);
         preg_match('/code=(.*?)&/', $response->getHeaderLine('Location'), $matches);
-        if (!isset($matches[1])) { // 过期的Cookie会不返回带code的Location
+        if (!isset($matches[1])) { // 过期的Cookie或者触发风控会不返回带code的Location,触发风控只能等待。
             return Response::json(-1, 'Cookie过期，请重新扫码登录');
         }
         $qcCode = $matches[1];
@@ -230,6 +252,14 @@ class QQ
         $data = json_decode($result, true);
         if ($data['iRet'] != 0) {
             return Response::json(-1, 'AccessToken获取失败');
+        }
+        $access = new Access();
+        $cookie = $access->where('cookie', json_encode($params))->find();
+        if (!$cookie->isEmpty()) {
+            $access->where('cookie', json_encode($params))->replace()->update([
+                'access_token' => $data['access_token'],
+                'openid' => $data['openid'],
+            ]);
         }
         return Response::json(0, '获取成功', [
             'access_token' => $data['access_token'],
