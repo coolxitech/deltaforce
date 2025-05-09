@@ -24,7 +24,6 @@ class QQ
             'allow_redirects' => false,
             'verify' => false,
             'version' => 2.0,
-            'proxy' => 'http://127.0.0.1:9001',
         ]);
     }
 
