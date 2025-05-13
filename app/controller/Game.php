@@ -603,4 +603,174 @@ class Game
         }
         return Response::json(0, '获取成功', $data['jData']['data']);
     }
+
+    public function recent()
+    {
+        $openid = Request::param('openid');
+        $access_token = Request::param('access_token');
+        if (Request::param('type') == null || Request::param('type') == '') {
+            $type = 1;
+        } else {
+            $type = Request::param('type');
+        }
+
+        if (empty($openid) || empty($access_token)) {
+            return Response::json(-1, '缺少参数');
+        }
+        $cookie = CookieJar::fromArray([
+            'openid' => $openid,
+            'access_token' => $access_token,
+            'acctype' => 'qc',
+            'appid' => 101491592,
+        ], '.qq.com');
+        $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
+            'form_params' => [
+                'iChartId' => 316969,
+                'iSubChartId' => 316969,
+                'sIdeToken' => 'NoOapI',
+                'method' => 'dfm/center.recent.detail',
+                'source' => '5',
+                'param' => json_encode(['resourceType' => 'sol']),
+            ],
+            'cookies' => $cookie,
+        ]);
+        $result = $response->getBody()->getContents();
+        $data = json_decode($result, true);
+        if ($data['ret'] != 0) {
+            return Response::json(-1, '获取失败,检查鉴权是否过期');
+        }
+        return Response::json(0, '获取成功', $data['jData']['data']['data']['solDetail']);
+    }
+
+    public function achievement()
+    {
+        $openid = Request::param('openid');
+        $access_token = Request::param('access_token');
+        if (Request::param('type') == null || Request::param('type') == '') {
+            $type = 1;
+        } else {
+            $type = Request::param('type');
+        }
+
+        if (empty($openid) || empty($access_token)) {
+            return Response::json(-1, '缺少参数');
+        }
+        $cookie = CookieJar::fromArray([
+            'openid' => $openid,
+            'access_token' => $access_token,
+            'acctype' => 'qc',
+            'appid' => 101491592,
+        ], '.qq.com');
+        $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
+            'form_params' => [
+                'iChartId' => 316969,
+                'iSubChartId' => 316969,
+                'sIdeToken' => 'NoOapI',
+                'method' => 'dfm/center.person.resource',
+                'source' => '5',
+                'param' => json_encode([
+                    'resourceType' => 'sol',
+                    'seasonid' => [
+                        1,
+                        2,
+                        3,
+                        4,
+                    ],
+                    'isAllSeason' => true,
+                ]),
+            ],
+            'cookies' => $cookie,
+        ]);
+        $result = $response->getBody()->getContents();
+        $data = json_decode($result, true);
+        if ($data['ret'] != 0) {
+            return Response::json(-1, '获取失败,检查鉴权是否过期');
+        }
+        return Response::json(0, '获取成功', $data['jData']['data']['data']['solDetail']);
+    }
+
+    public function password()
+    {
+        $openid = Request::param('openid');
+        $access_token = Request::param('access_token');
+        if (Request::param('type') == null || Request::param('type') == '') {
+            $type = 1;
+        } else {
+            $type = Request::param('type');
+        }
+
+        if (empty($openid) || empty($access_token)) {
+            return Response::json(-1, '缺少参数');
+        }
+        $cookie = CookieJar::fromArray([
+            'openid' => $openid,
+            'access_token' => $access_token,
+            'acctype' => 'qc',
+            'appid' => 101491592,
+        ], '.qq.com');
+        $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
+            'form_params' => [
+                'iChartId' => 384918,
+                'iSubChartId' => 384918,
+                'sIdeToken' => 'mbq5GZ',
+                'method' => 'dist.contents',
+                'source' => 5,
+                'param' => json_encode([
+                    'distType' => 'bannerManage',
+                    'contentType' => 'secretDay',
+                ]),
+            ],
+            'cookies' => $cookie,
+        ]);
+        $result = $response->getBody()->getContents();
+        $data = json_decode($result, true);
+        if ($data['ret'] != 0) {
+            return Response::json(-1, '获取失败,检查鉴权是否过期');
+        }
+        $data = explode(";\n", $data['jData']['data']['data']['content']['secretDay']['data'][0]['desc']);
+        $rooms = [];
+        foreach ($data as $value) {
+            if (str_contains($value, ':')) {
+                $room = explode(':', $value);
+                $rooms[$room[0]] = (int) $room[1];
+            }
+        }
+        return Response::json(0, '获取成功', $rooms);
+    }
+
+    public function manufacture()
+    {
+        $openid = Request::param('openid');
+        $access_token = Request::param('access_token');
+        if (Request::param('type') == null || Request::param('type') == '') {
+            $type = 1;
+        } else {
+            $type = Request::param('type');
+        }
+
+        if (empty($openid) || empty($access_token)) {
+            return Response::json(-1, '缺少参数');
+        }
+        $cookie = CookieJar::fromArray([
+            'openid' => $openid,
+            'access_token' => $access_token,
+            'acctype' => 'qc',
+            'appid' => 101491592,
+        ], '.qq.com');
+        $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
+            'form_params' => [
+                'iChartId' => 365589,
+                'iSubChartId' => 365589,
+                'sIdeToken' => 'bQaMCQ',
+                'source' => 5,
+            ],
+            'cookies' => $cookie,
+        ]);
+        $result = $response->getBody()->getContents();
+        $data = json_decode($result, true);
+        if ($data['ret'] != 0) {
+            return Response::json(-1, '获取失败,检查鉴权是否过期');
+        }
+        return Response::json(0, '获取成功', $data['jData']['data']['data']['placeData']);
+    }
 }
