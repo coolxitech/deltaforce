@@ -771,6 +771,6 @@ class Game
         if ($data['ret'] != 0) {
             return Response::json(-1, '获取失败,检查鉴权是否过期');
         }
-        return Response::json(0, '获取成功', $data['jData']['data']['data']['placeData']);
+        return Response::json(0, '获取成功', $data['jData']['data']['data']);
     }
 }
