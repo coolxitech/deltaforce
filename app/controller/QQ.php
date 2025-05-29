@@ -102,6 +102,9 @@ class QQ
     {
         try {
             $cookie = Request::param('cookie');
+            if (!$cookie) {
+                return Response::json(-1, '缺少cookie参数');
+            }
             $cookies = json_decode($cookie, true);
             $cookies['qrsig'] = $qrSig;
             $this->cookie = $this->cookie::fromArray($cookies, '.ptlogin2.qq.com');
