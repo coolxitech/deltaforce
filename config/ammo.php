@@ -167,4 +167,178 @@ return [
             'grade' => 3,
         ],
     ],
+    'ammo9x19' => [
+        [
+            'name' => '9x19mm PBP',
+            'grade' => 4,
+        ],
+        [
+            'name' => '9x19mm RIP',
+            'grade' => 3,
+        ],
+        [
+            'name' => '9x19mm AP6.3',
+            'grade' => 3,
+        ],
+        [
+            'name' => '9x19mm Pst',
+            'grade' => 2,
+        ],
+        [
+            'name' => '9x19mm PSO',
+            'grade' => 1,
+        ],
+    ],
+    'ammo5.7x28' => [
+        [
+            'name' => '5.7x28mm SS190',
+            'grade' => 5,
+        ],
+        [
+            'name' => '5.7x28mm SS193',
+            'grade' => 4,
+        ],
+        [
+            'name' => '5.7x28mm R37.F',
+            'grade' => 3,
+        ],
+        [
+            'name' => '5.7x28mm L191',
+            'grade' => 3,
+        ],
+        [
+            'name' => '5.7x28mm SS197SR',
+            'grade' => 2,
+        ],
+        [
+            'name' => '5.7x28mm SS198LF',
+            'grade' => 1,
+        ],
+    ],
+    'ammo.45' => [
+        [
+            'name' => '.45 ACP AP',
+            'grade' => 4,
+        ],
+        [
+            'name' => '.45 ACP RIP',
+            'grade' => 3,
+        ],
+        [
+            'name' => '.45 ACP FMJ',
+            'grade' => 3,
+        ],
+        [
+            'name' => '.45 ACP JHP',
+            'grade' => 2,
+        ],
+        [
+            'name' => '.45 ACP HS',
+            'grade' => 1,
+        ],
+    ],
+    'ammo4.6x30' => [
+        [
+            'name' => '4.6x30mm AP SX',
+            'grade' => 5,
+        ],
+        [
+            'name' => '4.6x30mm FMJ SX',
+            'grade' => 4,
+        ],
+        [
+            'name' => '4.6x30mm Subsonic SX',
+            'grade' => 3,
+        ],
+    ],
+    'ammo.357' => [
+        [
+            'name' => '.357 Magnum FMJ',
+            'grade' => 4,
+        ],
+        [
+            'name' => '.357 Magnum 9号霰射"鼠弹"',
+            'grade' => 3,
+        ],
+        [
+            'name' => '.357 Magnum JHP',
+            'grade' => 3,
+        ],
+        [
+            'name' => '.357 Magnum HP',
+            'grade' => 2,
+        ],
+    ],
+    'ammo.50' => [
+        [
+            'name' => '.50 AE FMJ',
+            'grade' => 4,
+        ],
+        [
+            'name' => '.50 AE JHP',
+            'grade' => 3,
+        ],
+        [
+            'name' => '.50 AE HP',
+            'grade' => 2,
+        ],
+    ],
+    'ammo7.62x54' => [
+        [
+            'name' => '7.62x54R SNB',
+            'grade' => 6,
+        ],
+        [
+            'name' => '7.62x54R BT',
+            'grade' => 5,
+        ],
+        [
+            'name' => '7.62x54R LPS',
+            'grade' => 4,
+        ],
+        [
+            'name' => '7.62x54R T46M',
+            'grade' => 3,
+        ],
+    ],
+    'ammo.338' => [
+        [
+            'name' => '.338 Lap Mag AP',
+            'grade' => 7,
+        ],
+    ],
+    'ammo12' => [
+        [
+            'name' => '12 Gauge独头 AP-20',
+            'grade' => 4,
+        ],
+        [
+            'name' => '12 Gauge 龙息弹',
+            'grade' => 4,
+        ],
+        [
+            'name' => '12 Gauge 8.5毫米鹿弹',
+            'grade' => 3,
+        ],
+        [
+            'name' => '12 Gauge 箭形弹',
+            'grade' => 3,
+        ],
+        [
+            'name' => '12 Gauge独头 FTX',
+            'grade' => 3,
+        ],
+        [
+            'name' => '12 Gauge独头 RIP',
+            'grade' => 2,
+        ],
+        [
+            'name' => '12 Gauge独头 GT',
+            'grade' => 2,
+        ],
+        [
+            'name' => '12 Gauge 7毫米鹿弹',
+            'grade' => 1,
+        ],
+    ],
 ];
