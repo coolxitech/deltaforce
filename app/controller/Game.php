@@ -464,7 +464,7 @@ class Game
             return Response::json(-1, '获取失败,检查鉴权是否过期');
         }
 
-        return Response::json(0, '获取成功', $data['jData']['data']['data']['list']);
+        return Response::json(0, '获取成功', $data['jData']['data']['data']['list'] ?? []);
     }
 
     public function price()
@@ -772,5 +772,58 @@ class Game
             return Response::json(-1, '获取失败,检查鉴权是否过期');
         }
         return Response::json(0, '获取成功', $data['jData']['data']['data']);
+    }
+
+    public function guns()
+    {
+        $openId = Request::param('openid');
+        $accessToken = Request::param('access_token');
+        $gunId = Request::param('gunId');
+        $cookie = CookieJar::fromArray([
+            'openid' => $openId,
+            'access_token' => $accessToken,
+            'acctype' => 'qc',
+            'appid' => 101491592,
+        ], '.qq.com');
+        $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
+            'form_params' => [
+                'iChartId' => 316968,
+                'iSubChartId' => 316968,
+                'sIdeToken' => 'KfXJwH',
+                'source' => 2,
+                'method' => 'dfm/object.list',
+                'param' => json_encode([
+                    'primary' => 'gun',
+                    'second' => 'gunRifle',
+                    'objectID' => $gunId,
+                ])
+            ],
+            'cookies' => $cookie,
+        ]);
+        $result = $response->getBody()->getContents();
+        $data = json_decode($result, true);
+        if ($data['ret'] != 0) {
+            return Response::json(-1, '获取失败,检查鉴权是否过期');
+        }
+        $weaponData = $data['jData']['data']['data']['list'][0];
+        // 获取弹药配置
+        $ammoConfig = config('ammo')[$weaponData['gunDetail']['caliber']];
+        $weaponData['gunDetail']['ammo'] = $ammoConfig;
+        // 获取配件配置
+        $accessoryConfig = config('accessory');
+        $weaponData['gunDetail']['accessory'] = array_map(function ($item) use ($accessoryConfig) {
+            return [
+                'slotID' => $item['slotID'],
+                'name' => $accessoryConfig[$item['slotID']],
+            ];
+        }, $weaponData['gunDetail']['accessory']);
+        $weaponData['gunDetail']['allAccessory'] = array_map(function ($item) use ($accessoryConfig) {
+            return [
+                'slotID' => $item['slotID'],
+                'name' => $accessoryConfig[$item['slotID']],
+            ];
+        }, $weaponData['gunDetail']['allAccessory']);
+
+        return Response::json(0, '获取成功', $weaponData);
     }
 }
