@@ -805,25 +805,46 @@ class Game
         if ($data['ret'] != 0) {
             return Response::json(-1, '获取失败,检查鉴权是否过期');
         }
-        $weaponData = $data['jData']['data']['data']['list'][0];
-        // 获取弹药配置
-        $ammoConfig = config('ammo')[$weaponData['gunDetail']['caliber']];
-        $weaponData['gunDetail']['ammo'] = $ammoConfig;
-        // 获取配件配置
-        $accessoryConfig = config('accessory');
-        $weaponData['gunDetail']['accessory'] = array_map(function ($item) use ($accessoryConfig) {
-            return [
-                'slotID' => $item['slotID'],
-                'name' => $accessoryConfig[$item['slotID']],
-            ];
-        }, $weaponData['gunDetail']['accessory']);
-        $weaponData['gunDetail']['allAccessory'] = array_map(function ($item) use ($accessoryConfig) {
-            return [
-                'slotID' => $item['slotID'],
-                'name' => $accessoryConfig[$item['slotID']],
-            ];
-        }, $weaponData['gunDetail']['allAccessory']);
+        $weapons = $data['jData']['data']['data']['list'];
+        foreach ($weapons as &$weaponData) {
+            // 获取弹药配置
+            if (!str_contains($weaponData['gunDetail']['caliber'], 'ammo')) {
+                $weaponData['gunDetail']['caliber'] = $this->normalizeCaliberCode($weaponData['gunDetail']['caliber']);
+            }
+            $ammoConfig = config('ammo')[$weaponData['gunDetail']['caliber']];
+            foreach ($weaponData['gunDetail']['ammo'] as $key => &$ammo) {
+                $ammo = [
+                    'objectID' => $ammo['objectID'],
+                    'name' => $ammoConfig[$key]['name'],
+                    'grade' => $ammoConfig[$key]['grade'],
+                ];
+            }
+            // 获取配件配置
+            $accessoryConfig = config('accessory');
+            $weaponData['gunDetail']['accessory'] = array_map(function ($item) use ($accessoryConfig) {
+                return [
+                    'slotID' => $item['slotID'],
+                    'name' => $accessoryConfig[$item['slotID']],
+                ];
+            }, $weaponData['gunDetail']['accessory']);
+            $weaponData['gunDetail']['allAccessory'] = array_map(function ($item) use ($accessoryConfig) {
+                return [
+                    'slotID' => $item['slotID'],
+                    'name' => $accessoryConfig[$item['slotID']],
+                ];
+            }, $weaponData['gunDetail']['allAccessory']);
+        }
 
-        return Response::json(0, '获取成功', $weaponData);
+
+        return Response::json(0, '获取成功', $weapons);
+    }
+
+    private function normalizeCaliberCode(string $code): string
+    {
+        if (preg_match('/\d+\.\d+x\d+/', $code, $matches)) {
+            $caliber = $matches[0];
+            return 'ammo' . $caliber;
+        }
+        return $code;
     }
 }
