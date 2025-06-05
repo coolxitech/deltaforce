@@ -193,7 +193,7 @@ class QQ
         }
         if ($qq) {
             $access = Access::where('qq', $qq)->find();
-            if ($access->isEmpty()) {
+            if (empty($access)) {
                 return Response::json(-2, '未找到该QQ号');
             }
             $params = $access->cookie;
