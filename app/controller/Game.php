@@ -22,68 +22,44 @@ class Game
 
     public function record(): Json
     {
-        $openId = Request::param('openid');
-        $accessToken = Request::param('access_token');
-        if (empty($openId) || empty($accessToken)) {
+        $params = Request::only(['openid', 'access_token']);
+        if (empty($params['openid']) || empty($params['access_token'])) {
             return Response::json(-1, '缺少参数');
         }
-        $cookie = CookieJar::fromArray([
-            'openid' => $openId,
-            'access_token' => $accessToken,
-            'acctype' => 'qc',
-            'appid' => 101491592,
-        ], '.qq.com');
+
+        $cookie = $this->createCookie($params['openid'], $params['access_token']);
         $gameData = [];
-        // 烽火地带战绩
-        $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
-            'form_params' => [
-                'iChartId' => 319386,
-                'iSubChartId' => 319386,
-                'sIdeToken' => 'zMemOt',
-                'type' => 4,
-                'page' => 1,
-            ],
-            'cookies' => $cookie,
-        ]);
-        $result = $response->getBody()->getContents();
-        $data = json_decode($result, true);
-        $gameData['gun'] = $data['ret'] != 0 ? null : $data['jData']['data'];
 
-        // 全面战场战绩
-        $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
-            'form_params' => [
-                'iChartId' => 319386,
-                'iSubChartId' => 319386,
-                'sIdeToken' => 'zMemOt',
-                'type' => 5,
-                'page' => 1,
-            ],
-            'cookies' => $cookie,
-        ]);
-        $result = $response->getBody()->getContents();
-        $data = json_decode($result, true);
-        $gameData['operator'] = $data['ret'] != 0 ? null : $data['jData']['data'];
-
-        if ($gameData['gun'] == null && $gameData['operator'] == null) {
-            return Response::json(-1, 'AccessToken已失效');
+        $types = [4 => 'gun', 5 => 'operator'];
+        foreach ($types as $type => $key) {
+            $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
+                'form_params' => [
+                    'iChartId' => 319386,
+                    'iSubChartId' => 319386,
+                    'sIdeToken' => 'zMemOt',
+                    'type' => $type,
+                    'page' => 1,
+                ],
+                'cookies' => $cookie,
+            ]);
+            $data = json_decode($response->getBody()->getContents(), true);
+            $gameData[$key] = $data['ret'] === 0 ? $data['jData']['data'] : null;
         }
-        return Response::json(0, '获取成功', $gameData);
+
+        return empty($gameData['gun']) && empty($gameData['operator'])
+            ? Response::json(-1, 'AccessToken已失效')
+            : Response::json(0, '获取成功', $gameData);
     }
 
     public function player(): Json
     {
-        $openId = Request::param('openid');
-        $accessToken = Request::param('access_token');
-        $seasonId = Request::param('season_id') ?? 0;
-        if (empty($openId) || empty($accessToken)) {
+        $params = Request::only(['openid', 'access_token', 'season_id']);
+        if (empty($params['openid']) || empty($params['access_token'])) {
             return Response::json(-1, '缺少参数');
         }
-        $cookie = CookieJar::fromArray([
-            'openid' => $openId,
-            'access_token' => $accessToken,
-            'acctype' => 'qc',
-            'appid' => 101491592,
-        ], '.qq.com');
+
+        $seasonId = $params['season_id'] ?? 0;
+        $cookie = $this->createCookie($params['openid'], $params['access_token']);
         $gameData = [
             'player' => [],
             'game' => [],
@@ -92,7 +68,6 @@ class Game
             'money' => 0,
         ];
 
-        // 玩家信息
         $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
             'form_params' => [
                 'iChartId' => 317814,
@@ -102,64 +77,34 @@ class Game
             ],
             'cookies' => $cookie,
         ]);
-        $result = $response->getBody()->getContents();
-        $data = json_decode($result, true);
-        if ($data['ret'] == 0) {
-            $data['jData']['userData']['charac_name'] = urldecode($data['jData']['userData']['charac_name']);
-            $gameData['player'] = $data['jData']['userData'];
+        $data = json_decode($response->getBody()->getContents(), true);
+        if ($data['ret'] === 0) {
+            $gameData['player'] = array_merge($data['jData']['userData'], [
+                'charac_name' => urldecode($data['jData']['userData']['charac_name']),
+            ]);
             $gameData['game'] = $data['jData']['careerData'];
         }
 
-
-        // 三角劵数量
-        $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
-            'form_params' => [
-                'iChartId' => 319386,
-                'iSubChartId' => 319386,
-                'sIdeToken' => 'zMemOt',
-                'type' => 3,
-                'item' => 17888808888,
-            ],
-            'cookies' => $cookie,
-        ]);
-        $result = $response->getBody()->getContents();
-        $data = json_decode($result, true);
-        if ($data['ret'] == 0) {
-            $gameData['coin'] = (int) $data['jData']['data'][0]['totalMoney'];
-        }
-
-        // 三角币数量
-        $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
-            'form_params' => [
-                'iChartId' => 319386,
-                'iSubChartId' => 319386,
-                'sIdeToken' => 'zMemOt',
-                'type' => 3,
-                'item' => 17888808889,
-            ],
-            'cookies' => $cookie,
-        ]);
-        $result = $response->getBody()->getContents();
-        $data = json_decode($result, true);
-        if ($data['ret'] == 0) {
-            $gameData['tickets'] = (int) $data['jData']['data'][0]['totalMoney'];
-        }
-
-        //哈夫币数量
-        $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
-            'form_params' => [
-                'iChartId' => 319386,
-                'iSubChartId' => 319386,
-                'sIdeToken' => 'zMemOt',
-                'type' => 3,
-                'item' => 17020000010,
-            ],
-            'cookies' => $cookie,
-        ]);
-        $result = $response->getBody()->getContents();
-        $data = json_decode($result, true);
-        if ($data['ret'] == 0) {
-            $gameData['money'] = (int) $data['jData']['data'][0]['totalMoney'];
+        $currencyItems = [
+            'coin' => 17888808888,
+            'tickets' => 17888808889,
+            'money' => 17020000010,
+        ];
+        foreach ($currencyItems as $key => $itemId) {
+            $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
+                'form_params' => [
+                    'iChartId' => 319386,
+                    'iSubChartId' => 319386,
+                    'sIdeToken' => 'zMemOt',
+                    'type' => 3,
+                    'item' => $itemId,
+                ],
+                'cookies' => $cookie,
+            ]);
+            $data = json_decode($response->getBody()->getContents(), true);
+            if ($data['ret'] === 0) {
+                $gameData[$key] = (int) ($data['jData']['data'][0]['totalMoney'] ?? 0);
+            }
         }
 
         return Response::json(0, '获取成功', $gameData);
@@ -167,18 +112,12 @@ class Game
 
     public function config(): Json
     {
-        $openId = Request::param('openid');
-        $accessToken = Request::param('access_token');
-        if (empty($openId) || empty($accessToken)) {
+        $params = Request::only(['openid', 'access_token']);
+        if (empty($params['openid']) || empty($params['access_token'])) {
             return Response::json(-1, '缺少参数');
         }
-        $cookie = CookieJar::fromArray([
-            'openid' => $openId,
-            'access_token' => $accessToken,
-            'acctype' => 'qc',
-            'appid' => 101491592,
-        ], '.qq.com');
 
+        $cookie = $this->createCookie($params['openid'], $params['access_token']);
         $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
             'form_params' => [
                 'iChartId' => 316968,
@@ -186,35 +125,24 @@ class Game
                 'sIdeToken' => 'KfXJwH',
                 'source' => 5,
                 'method' => 'dfm/config.list',
-                'param' => json_encode([
-                    'configType' => 'all',
-                ]),
+                'param' => json_encode(['configType' => 'all']),
             ],
             'cookies' => $cookie,
         ]);
-        $result = $response->getBody()->getContents();
-        $data = json_decode($result, true);
-        $gameData = $data['ret'] != 0 ? [] : $data['jData']['data']['data']['config'];
+        $data = json_decode($response->getBody()->getContents(), true);
+        $gameData = $data['ret'] === 0 ? $data['jData']['data']['data']['config'] : [];
 
         return Response::json(0, '获取成功', $gameData);
     }
 
     public function items(): Json
     {
-        $openId = Request::param('openid');
-        $accessToken = Request::param('access_token');
-        $type = Request::param('type') ?? '';
-        $subType = Request::param('sub_type') ?? '';
-        $itemId = Request::param('item_id') ?? '';
-        if (empty($openId) || empty($accessToken)) {
+        $params = Request::only(['openid', 'access_token', 'type', 'sub_type', 'item_id']);
+        if (empty($params['openid']) || empty($params['access_token'])) {
             return Response::json(-1, '缺少参数');
         }
-        $cookie = CookieJar::fromArray([
-            'openid' => $openId,
-            'access_token' => $accessToken,
-            'acctype' => 'qc',
-            'appid' => 101491592,
-        ], '.qq.com');
+
+        $cookie = $this->createCookie($params['openid'], $params['access_token']);
         $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
             'form_params' => [
                 'iChartId' => 316968,
@@ -223,37 +151,28 @@ class Game
                 'source' => 2,
                 'method' => 'dfm/object.list',
                 'param' => json_encode([
-                    'primary' => $type,
-                    'second' => $subType,
-                    'objectID' => $itemId,
-                ])
+                    'primary' => $params['type'] ?? '',
+                    'second' => $params['sub_type'] ?? '',
+                    'objectID' => $params['item_id'] ?? '',
+                ]),
             ],
             'cookies' => $cookie,
         ]);
-        $result = $response->getBody()->getContents();
-        $data = json_decode($result, true);
-        if ($data['ret'] != 0) {
-            return Response::json(-1, '获取失败,检查鉴权是否过期');
-        }
-
-        return Response::json(0, '获取成功', $data['jData']['data']['data']['list'] ?? []);
+        $data = json_decode($response->getBody()->getContents(), true);
+        return $data['ret'] !== 0
+            ? Response::json(-1, '获取失败,检查鉴权是否过期')
+            : Response::json(0, '获取成功', $data['jData']['data']['data']['list'] ?? []);
     }
 
-    public function price()
+    public function price(): Json
     {
-        $openid = Request::param('openid');
-        $access_token = Request::param('access_token');
-        $ids = Request::param('ids');
-        $recent = Request::param('recent') ?? 0;
-        if (empty($openid) || empty($access_token) || empty($ids)) {
+        $params = Request::only(['openid', 'access_token', 'ids', 'recent']);
+        if (empty($params['openid']) || empty($params['access_token']) || empty($params['ids'])) {
             return Response::json(-1, '缺少参数');
         }
-        $cookie = CookieJar::fromArray([
-            'openid' => $openid,
-            'access_token' => $access_token,
-            'acctype' => 'qc',
-            'appid' => 101491592,
-        ], '.qq.com');
+
+        $cookie = $this->createCookie($params['openid'], $params['access_token']);
+        $ids = str_contains($params['ids'], ',') ? array_map('intval', explode(',', $params['ids'])) : [(int) $params['ids']];
         $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
             'form_params' => [
                 'iChartId' => 316968,
@@ -261,58 +180,45 @@ class Game
                 'sIdeToken' => 'KfXJwH',
                 'source' => 2,
                 'method' => 'dfm/object.price.latest',
-                'param' => json_encode([
-                    'objectID' => str_contains($ids, ',') ? array_map('intval', explode(',', $ids)) : [(int) $ids],
-                ])
+                'param' => json_encode(['objectID' => $ids]),
             ],
             'cookies' => $cookie,
         ]);
-        $result = $response->getBody()->getContents();
-        $data = json_decode($result, true);
-        if ($data['ret'] != 0) {
+        $data = json_decode($response->getBody()->getContents(), true);
+        if ($data['ret'] !== 0) {
             return Response::json(-1, '获取失败,检查鉴权是否过期');
         }
-        $gameData = $data['jData']['data']['data']['dataMap'];
 
-        if ($recent == 0) {
-            return Response::json(0, '获取成功', $gameData);
-        }
-        foreach ($gameData as $key => $item) {
-            $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
-                'form_params' => [
-                    'iChartId' => 316968,
-                    'iSubChartId' => 316968,
-                    'sIdeToken' => 'KfXJwH',
-                    'source' => 2,
-                    'method' => 'dfm/object.price.recent',
-                    'param' => json_encode([
-                        'objectID' => $key,
-                    ])
-                ],
-                'cookies' => $cookie,
-            ]);
-            $result = $response->getBody()->getContents();
-            $data = json_decode($result, true);
-            $gameData[$key]['recent'] = $data['jData']['data']['data']['objectPriceRecent']['list'];
+        $gameData = $data['jData']['data']['data']['dataMap'];
+        if (($params['recent'] ?? 0) == 1) {
+            foreach ($gameData as $key => &$item) {
+                $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
+                    'form_params' => [
+                        'iChartId' => 316968,
+                        'iSubChartId' => 316968,
+                        'sIdeToken' => 'KfXJwH',
+                        'source' => 2,
+                        'method' => 'dfm/object.price.recent',
+                        'param' => json_encode(['objectID' => $key]),
+                    ],
+                    'cookies' => $cookie,
+                ]);
+                $recentData = json_decode($response->getBody()->getContents(), true);
+                $item['recent'] = $recentData['jData']['data']['data']['objectPriceRecent']['list'] ?? [];
+            }
         }
 
         return Response::json(0, '获取成功', $gameData);
     }
 
-    public function assets()
+    public function assets(): Json
     {
-        $openid = Request::param('openid');
-        $access_token = Request::param('access_token');
-        if (empty($openid) || empty($access_token)) {
+        $params = Request::only(['openid', 'access_token']);
+        if (empty($params['openid']) || empty($params['access_token'])) {
             return Response::json(-1, '缺少参数');
         }
-        $cookie = CookieJar::fromArray([
-            'openid' => $openid,
-            'access_token' => $access_token,
-            'acctype' => 'qc',
-            'appid' => 101491592,
-        ], '.qq.com');
 
+        $cookie = $this->createCookie($params['openid'], $params['access_token']);
         $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
             'form_params' => [
                 'iChartId' => 318948,
@@ -321,39 +227,27 @@ class Game
             ],
             'cookies' => $cookie,
         ]);
-        $result = $response->getBody()->getContents();
-        $data = json_decode($result, true);
-        if ($data['ret'] != 0) {
+        $data = json_decode($response->getBody()->getContents(), true);
+        if ($data['ret'] !== 0) {
             return Response::json(-1, '获取失败,检查鉴权是否过期');
-        } else {
-            $gameData['userData'] = $data['jData']['userData'];
-            $gameData['weponData'] = $data['jData']['weponData'];
-            $gameData['dCData'] = $data['jData']['dCData'];
         }
 
-        return Response::json(0, '获取成功', $gameData);
+        return Response::json(0, '获取成功', [
+            'userData' => $data['jData']['userData'],
+            'weponData' => $data['jData']['weponData'],
+            'dCData' => $data['jData']['dCData'],
+        ]);
     }
 
-    public function logs()
+    public function logs(): Json
     {
-        $openid = Request::param('openid');
-        $access_token = Request::param('access_token');
-        if (Request::param('type') == null || Request::param('type') == '') {
-            $type = 1;
-        } else {
-            $type = Request::param('type');
-        }
-
-        if (empty($openid) || empty($access_token)) {
+        $params = Request::only(['openid', 'access_token', 'type']);
+        if (empty($params['openid']) || empty($params['access_token'])) {
             return Response::json(-1, '缺少参数');
         }
-        $cookie = CookieJar::fromArray([
-            'openid' => $openid,
-            'access_token' => $access_token,
-            'acctype' => 'qc',
-            'appid' => 101491592,
-        ], '.qq.com');
-        // 流水信息
+
+        $type = $params['type'] ?? 1;
+        $cookie = $this->createCookie($params['openid'], $params['access_token']);
         $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
             'form_params' => [
                 'iChartId' => 319386,
@@ -363,38 +257,26 @@ class Game
             ],
             'cookies' => $cookie,
         ]);
-        $result = $response->getBody()->getContents();
-        $data = json_decode($result, true);
-        if ($data['ret'] != 0) {
+        $data = json_decode($response->getBody()->getContents(), true);
+        if ($data['ret'] !== 0) {
             return Response::json(-1, '获取失败,检查鉴权是否过期');
         }
 
         if ($type == 3) {
-            $data['jData']['data']['totalMoney'] = $data['jData']['data'][0]['totalMoney'];
-            unset($data['jData']['data'][0]);
+            $data['jData']['data'] = ['totalMoney' => $data['jData']['data'][0]['totalMoney']];
         }
         return Response::json(0, '获取成功', $data['jData']['data']);
     }
 
-    public function recent()
+    public function recent(): Json
     {
-        $openid = Request::param('openid');
-        $access_token = Request::param('access_token');
-        if (Request::param('type') == null || Request::param('type') == '') {
-            $type = 1;
-        } else {
-            $type = Request::param('type');
-        }
-
-        if (empty($openid) || empty($access_token)) {
+        $params = Request::only(['openid', 'access_token', 'type']);
+        if (empty($params['openid']) || empty($params['access_token'])) {
             return Response::json(-1, '缺少参数');
         }
-        $cookie = CookieJar::fromArray([
-            'openid' => $openid,
-            'access_token' => $access_token,
-            'acctype' => 'qc',
-            'appid' => 101491592,
-        ], '.qq.com');
+
+        $type = $params['type'] ?? 1;
+        $cookie = $this->createCookie($params['openid'], $params['access_token']);
         $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
             'form_params' => [
                 'iChartId' => 316969,
@@ -406,33 +288,21 @@ class Game
             ],
             'cookies' => $cookie,
         ]);
-        $result = $response->getBody()->getContents();
-        $data = json_decode($result, true);
-        if ($data['ret'] != 0) {
-            return Response::json(-1, '获取失败,检查鉴权是否过期');
-        }
-        return Response::json(0, '获取成功', $data['jData']['data']['data']['solDetail']);
+        $data = json_decode($response->getBody()->getContents(), true);
+        return $data['ret'] !== 0
+            ? Response::json(-1, '获取失败,检查鉴权是否过期')
+            : Response::json(0, '获取成功', $data['jData']['data']['data']['solDetail']);
     }
 
-    public function achievement()
+    public function achievement(): Json
     {
-        $openid = Request::param('openid');
-        $access_token = Request::param('access_token');
-        if (Request::param('type') == null || Request::param('type') == '') {
-            $type = 1;
-        } else {
-            $type = Request::param('type');
-        }
-
-        if (empty($openid) || empty($access_token)) {
+        $params = Request::only(['openid', 'access_token', 'type']);
+        if (empty($params['openid']) || empty($params['access_token'])) {
             return Response::json(-1, '缺少参数');
         }
-        $cookie = CookieJar::fromArray([
-            'openid' => $openid,
-            'access_token' => $access_token,
-            'acctype' => 'qc',
-            'appid' => 101491592,
-        ], '.qq.com');
+
+        $type = $params['type'] ?? 1;
+        $cookie = $this->createCookie($params['openid'], $params['access_token']);
         $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
             'form_params' => [
                 'iChartId' => 316969,
@@ -442,44 +312,27 @@ class Game
                 'source' => '5',
                 'param' => json_encode([
                     'resourceType' => 'sol',
-                    'seasonid' => [
-                        1,
-                        2,
-                        3,
-                        4,
-                    ],
+                    'seasonid' => [1, 2, 3, 4],
                     'isAllSeason' => true,
                 ]),
             ],
             'cookies' => $cookie,
         ]);
-        $result = $response->getBody()->getContents();
-        $data = json_decode($result, true);
-        if ($data['ret'] != 0) {
-            return Response::json(-1, '获取失败,检查鉴权是否过期');
-        }
-        return Response::json(0, '获取成功', $data['jData']['data']['data']['solDetail']);
+        $data = json_decode($response->getBody()->getContents(), true);
+        return $data['ret'] !== 0
+            ? Response::json(-1, '获取失败,检查鉴权是否过期')
+            : Response::json(0, '获取成功', $data['jData']['data']['data']['solDetail']);
     }
 
-    public function password()
+    public function password(): Json
     {
-        $openid = Request::param('openid');
-        $access_token = Request::param('access_token');
-        if (Request::param('type') == null || Request::param('type') == '') {
-            $type = 1;
-        } else {
-            $type = Request::param('type');
-        }
-
-        if (empty($openid) || empty($access_token)) {
+        $params = Request::only(['openid', 'access_token', 'type']);
+        if (empty($params['openid']) || empty($params['access_token'])) {
             return Response::json(-1, '缺少参数');
         }
-        $cookie = CookieJar::fromArray([
-            'openid' => $openid,
-            'access_token' => $access_token,
-            'acctype' => 'qc',
-            'appid' => 101491592,
-        ], '.qq.com');
+
+        $type = $params['type'] ?? 1;
+        $cookie = $this->createCookie($params['openid'], $params['access_token']);
         $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
             'form_params' => [
                 'iChartId' => 384918,
@@ -494,41 +347,30 @@ class Game
             ],
             'cookies' => $cookie,
         ]);
-        $result = $response->getBody()->getContents();
-        $data = json_decode($result, true);
-        if ($data['ret'] != 0) {
+        $data = json_decode($response->getBody()->getContents(), true);
+        if ($data['ret'] !== 0) {
             return Response::json(-1, '获取失败,检查鉴权是否过期');
         }
-        $data = explode(";\n", $data['jData']['data']['data']['content']['secretDay']['data'][0]['desc']);
+
         $rooms = [];
-        foreach ($data as $value) {
+        foreach (explode(";\n", $data['jData']['data']['data']['content']['secretDay']['data'][0]['desc']) as $value) {
             if (str_contains($value, ':')) {
-                $room = explode(':', $value);
-                $rooms[$room[0]] = (int) $room[1];
+                [$key, $val] = explode(':', $value, 2);
+                $rooms[trim($key)] = (int) trim($val);
             }
         }
         return Response::json(0, '获取成功', $rooms);
     }
 
-    public function manufacture()
+    public function manufacture(): Json
     {
-        $openid = Request::param('openid');
-        $access_token = Request::param('access_token');
-        if (Request::param('type') == null || Request::param('type') == '') {
-            $type = 1;
-        } else {
-            $type = Request::param('type');
-        }
-
-        if (empty($openid) || empty($access_token)) {
+        $params = Request::only(['openid', 'access_token', 'type']);
+        if (empty($params['openid']) || empty($params['access_token'])) {
             return Response::json(-1, '缺少参数');
         }
-        $cookie = CookieJar::fromArray([
-            'openid' => $openid,
-            'access_token' => $access_token,
-            'acctype' => 'qc',
-            'appid' => 101491592,
-        ], '.qq.com');
+
+        $type = $params['type'] ?? 1;
+        $cookie = $this->createCookie($params['openid'], $params['access_token']);
         $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
             'form_params' => [
                 'iChartId' => 365589,
@@ -538,25 +380,20 @@ class Game
             ],
             'cookies' => $cookie,
         ]);
-        $result = $response->getBody()->getContents();
-        $data = json_decode($result, true);
-        if ($data['ret'] != 0) {
-            return Response::json(-1, '获取失败,检查鉴权是否过期');
-        }
-        return Response::json(0, '获取成功', $data['jData']['data']['data']);
+        $data = json_decode($response->getBody()->getContents(), true);
+        return $data['ret'] !== 0
+            ? Response::json(-1, '获取失败,检查鉴权是否过期')
+            : Response::json(0, '获取成功', $data['jData']['data']['data']);
     }
 
-    public function guns()
+    public function guns(): Json
     {
-        $openId = Request::param('openid');
-        $accessToken = Request::param('access_token');
-        $gunId = Request::param('gunId');
-        $cookie = CookieJar::fromArray([
-            'openid' => $openId,
-            'access_token' => $accessToken,
-            'acctype' => 'qc',
-            'appid' => 101491592,
-        ], '.qq.com');
+        $params = Request::only(['openid', 'access_token', 'gunId']);
+        if (empty($params['openid']) || empty($params['access_token'])) {
+            return Response::json(-1, '缺少参数');
+        }
+
+        $cookie = $this->createCookie($params['openid'], $params['access_token']);
         $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
             'form_params' => [
                 'iChartId' => 316968,
@@ -567,56 +404,58 @@ class Game
                 'param' => json_encode([
                     'primary' => 'gun',
                     'second' => 'gunRifle',
-                    'objectID' => $gunId,
-                ])
+                    'objectID' => $params['gunId'] ?? '',
+                ]),
             ],
             'cookies' => $cookie,
         ]);
-        $result = $response->getBody()->getContents();
-        $data = json_decode($result, true);
-        if ($data['ret'] != 0) {
+        $data = json_decode($response->getBody()->getContents(), true);
+        if ($data['ret'] !== 0) {
             return Response::json(-1, '获取失败,检查鉴权是否过期');
         }
-        $weapons = $data['jData']['data']['data']['list'];
-        foreach ($weapons as &$weaponData) {
-            // 获取弹药配置
-            if (!str_contains($weaponData['gunDetail']['caliber'], 'ammo')) {
-                $weaponData['gunDetail']['caliber'] = $this->normalizeCaliberCode($weaponData['gunDetail']['caliber']);
-            }
-            $ammoConfig = config('ammo')[$weaponData['gunDetail']['caliber']];
-            foreach ($weaponData['gunDetail']['ammo'] as $key => &$ammo) {
-                $ammo = [
-                    'objectID' => $ammo['objectID'],
-                    'name' => $ammoConfig[$key]['name'],
-                    'grade' => $ammoConfig[$key]['grade'],
-                ];
-            }
-            // 获取配件配置
-            $accessoryConfig = config('accessory');
-            $weaponData['gunDetail']['accessory'] = array_map(function ($item) use ($accessoryConfig) {
-                return [
-                    'slotID' => $item['slotID'],
-                    'name' => $accessoryConfig[$item['slotID']],
-                ];
-            }, $weaponData['gunDetail']['accessory']);
-            $weaponData['gunDetail']['allAccessory'] = array_map(function ($item) use ($accessoryConfig) {
-                return [
-                    'slotID' => $item['slotID'],
-                    'name' => $accessoryConfig[$item['slotID']],
-                ];
-            }, $weaponData['gunDetail']['allAccessory']);
-        }
 
+        $weapons = $data['jData']['data']['data']['list'] ?? [];
+        $ammoConfig = config('ammo');
+        $accessoryConfig = config('accessory');
+        foreach ($weapons as &$weaponData) {
+            $caliber = str_contains($weaponData['gunDetail']['caliber'], 'ammo')
+                ? $weaponData['gunDetail']['caliber']
+                : $this->normalizeCaliberCode($weaponData['gunDetail']['caliber']);
+            $weaponData['gunDetail']['caliber'] = $caliber;
+            $currentAmmoConfig = $ammoConfig[$caliber] ?? [];
+
+            $weaponData['gunDetail']['ammo'] = array_map(function ($ammo, $key) use ($currentAmmoConfig) {
+                return [
+                    'objectID' => $ammo['objectID'],
+                    'name' => $currentAmmoConfig[$key]['name'] ?? '',
+                    'grade' => $currentAmmoConfig[$key]['grade'] ?? '',
+                ];
+            }, $weaponData['gunDetail']['ammo'], array_keys($weaponData['gunDetail']['ammo']));
+
+
+            $mapAccessory = fn ($item) => [
+                'slotID' => $item['slotID'],
+                'name' => $accessoryConfig[$item['slotID']] ?? '',
+            ];
+            $weaponData['gunDetail']['accessory'] = array_map($mapAccessory, $weaponData['gunDetail']['accessory']);
+            $weaponData['gunDetail']['allAccessory'] = array_map($mapAccessory, $weaponData['gunDetail']['allAccessory']);
+        }
 
         return Response::json(0, '获取成功', $weapons);
     }
 
     private function normalizeCaliberCode(string $code): string
     {
-        if (preg_match('/\d+\.\d+x\d+/', $code, $matches)) {
-            $caliber = $matches[0];
-            return 'ammo' . $caliber;
-        }
-        return $code;
+        return preg_match('/\d+\.\d+x\d+/', $code, $matches) ? 'ammo' . $matches[0] : $code;
+    }
+
+    private function createCookie(string $openId, string $accessToken): CookieJar
+    {
+        return CookieJar::fromArray([
+            'openid' => $openId,
+            'access_token' => $accessToken,
+            'acctype' => 'qc',
+            'appid' => 101491592,
+        ], '.qq.com');
     }
 }
