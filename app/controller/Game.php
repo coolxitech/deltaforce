@@ -112,22 +112,15 @@ class Game
 
     public function config(): Json
     {
-        $params = Request::only(['openid', 'access_token']);
-        if (empty($params['openid']) || empty($params['access_token'])) {
-            return Response::json(-1, '缺少参数');
-        }
-
-        $cookie = $this->createCookie($params['openid'], $params['access_token']);
         $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
             'form_params' => [
-                'iChartId' => 316968,
-                'iSubChartId' => 316968,
-                'sIdeToken' => 'KfXJwH',
+                'iChartId' => 352143,
+                'iSubChartId' => 352143,
+                'sIdeToken' => 'YWRywA',
                 'source' => 5,
                 'method' => 'dfm/config.list',
                 'param' => json_encode(['configType' => 'all']),
             ],
-            'cookies' => $cookie,
         ]);
         $data = json_decode($response->getBody()->getContents(), true);
         $gameData = $data['ret'] === 0 ? $data['jData']['data']['data']['config'] : [];
@@ -137,17 +130,12 @@ class Game
 
     public function items(): Json
     {
-        $params = Request::only(['openid', 'access_token', 'type', 'sub_type', 'item_id']);
-        if (empty($params['openid']) || empty($params['access_token'])) {
-            return Response::json(-1, '缺少参数');
-        }
-
-        $cookie = $this->createCookie($params['openid'], $params['access_token']);
+        $params = Request::only(['type', 'sub_type', 'item_id']);
         $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
             'form_params' => [
-                'iChartId' => 316968,
-                'iSubChartId' => 316968,
-                'sIdeToken' => 'KfXJwH',
+                'iChartId' => 352143,
+                'iSubChartId' => 352143,
+                'sIdeToken' => 'YWRywA',
                 'source' => 2,
                 'method' => 'dfm/object.list',
                 'param' => json_encode([
@@ -156,11 +144,10 @@ class Game
                     'objectID' => $params['item_id'] ?? '',
                 ]),
             ],
-            'cookies' => $cookie,
         ]);
         $data = json_decode($response->getBody()->getContents(), true);
         return $data['ret'] !== 0
-            ? Response::json(-1, '获取失败,检查鉴权是否过期')
+            ? Response::json(-1, '获取失败')
             : Response::json(0, '获取成功', $data['jData']['data']['data']['list'] ?? []);
     }
 
@@ -175,9 +162,9 @@ class Game
         $ids = str_contains($params['ids'], ',') ? array_map('intval', explode(',', $params['ids'])) : [(int) $params['ids']];
         $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
             'form_params' => [
-                'iChartId' => 316968,
-                'iSubChartId' => 316968,
-                'sIdeToken' => 'KfXJwH',
+                'iChartId' => 352143,
+                'iSubChartId' => 352143,
+                'sIdeToken' => 'YWRywA',
                 'source' => 2,
                 'method' => 'dfm/object.price.latest',
                 'param' => json_encode(['objectID' => $ids]),
@@ -194,9 +181,9 @@ class Game
             foreach ($gameData as $key => &$item) {
                 $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
                     'form_params' => [
-                        'iChartId' => 316968,
-                        'iSubChartId' => 316968,
-                        'sIdeToken' => 'KfXJwH',
+                        'iChartId' => 352143,
+                        'iSubChartId' => 352143,
+                        'sIdeToken' => 'YWRywA',
                         'source' => 2,
                         'method' => 'dfm/object.price.recent',
                         'param' => json_encode(['objectID' => $key]),
