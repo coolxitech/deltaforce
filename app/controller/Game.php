@@ -375,17 +375,13 @@ class Game
 
     public function guns(): Json
     {
-        $params = Request::only(['openid', 'access_token', 'gunId']);
-        if (empty($params['openid']) || empty($params['access_token'])) {
-            return Response::json(-1, '缺少参数');
-        }
-
+        $params = Request::only(['gunId']);
         $cookie = $this->createCookie($params['openid'], $params['access_token']);
         $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
             'form_params' => [
-                'iChartId' => 316968,
-                'iSubChartId' => 316968,
-                'sIdeToken' => 'KfXJwH',
+                'iChartId' => 352143,
+                'iSubChartId' => 352143,
+                'sIdeToken' => 'YWRywA',
                 'source' => 2,
                 'method' => 'dfm/object.list',
                 'param' => json_encode([
