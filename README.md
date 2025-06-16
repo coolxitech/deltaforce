@@ -46,7 +46,9 @@ composer update coolxitech/deltaforce
 
 ## 版权信息
 
-DeltaForce API遵循GPLv3开源协议发布，并提供免费使用,禁止商业用途并不承担您在使用过程造成的法律责任。
+DeltaForce API遵循CC BY-NC-SA 4.0开源协议发布，并提供免费使用以及二次分发,禁止商业用途并且不承担您在使用过程造成的法律责任。
+
+以下为项目中使用的主要开源软件
 
 ThinkPHP遵循Apache2开源协议发布，并提供免费使用。
 
