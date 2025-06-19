@@ -267,8 +267,6 @@ class Game
         if (empty($params['openid']) || empty($params['access_token'])) {
             return Response::json(-1, '缺少参数');
         }
-
-        $type = $params['type'] ?? 1;
         $cookie = $this->createCookie($params['openid'], $params['access_token'], empty($accessType) || !($accessType === 'wx'));
         $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
             'form_params' => [
