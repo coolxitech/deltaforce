@@ -21,8 +21,7 @@
         "topthink/framework": "^8.0",
         "topthink/think-orm": "^3.0|^4.0",
         "topthink/think-filesystem": "^2.0",
-        "guzzlehttp/guzzle": "^7.9",
-        "jaeger/querylist": "^4.4.6"
+        "guzzlehttp/guzzle": "^7.9"
     },
     "require-dev": {
         "topthink/think-dumper": "^1.0",
