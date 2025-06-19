@@ -23,11 +23,12 @@ class Game
     public function record(): Json
     {
         $params = Request::only(['openid', 'access_token']);
+        $accessType = Request::header('acctype');
         if (empty($params['openid']) || empty($params['access_token'])) {
             return Response::json(-1, '缺少参数');
         }
 
-        $cookie = $this->createCookie($params['openid'], $params['access_token']);
+        $cookie = $this->createCookie($params['openid'], $params['access_token'], empty($accessType) || !($accessType === 'wx'));
         $gameData = [];
 
         $types = [4 => 'gun', 5 => 'operator'];
@@ -54,12 +55,13 @@ class Game
     public function player(): Json
     {
         $params = Request::only(['openid', 'access_token', 'season_id']);
+        $accessType = Request::header('acctype');
         if (empty($params['openid']) || empty($params['access_token'])) {
             return Response::json(-1, '缺少参数');
         }
 
         $seasonId = $params['season_id'] ?? 0;
-        $cookie = $this->createCookie($params['openid'], $params['access_token']);
+        $cookie = $this->createCookie($params['openid'], $params['access_token'], empty($accessType) || !($accessType === 'wx'));
         $gameData = [
             'player' => [],
             'game' => [],
@@ -154,11 +156,12 @@ class Game
     public function price(): Json
     {
         $params = Request::only(['openid', 'access_token', 'ids', 'recent']);
+        $accessType = Request::header('acctype');
         if (empty($params['openid']) || empty($params['access_token']) || empty($params['ids'])) {
             return Response::json(-1, '缺少参数');
         }
 
-        $cookie = $this->createCookie($params['openid'], $params['access_token']);
+        $cookie = $this->createCookie($params['openid'], $params['access_token'], empty($accessType) || !($accessType === 'wx'));
         $ids = str_contains($params['ids'], ',') ? array_map('intval', explode(',', $params['ids'])) : [(int) $params['ids']];
         $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
             'form_params' => [
@@ -201,11 +204,12 @@ class Game
     public function assets(): Json
     {
         $params = Request::only(['openid', 'access_token']);
+        $accessType = Request::header('acctype');
         if (empty($params['openid']) || empty($params['access_token'])) {
             return Response::json(-1, '缺少参数');
         }
 
-        $cookie = $this->createCookie($params['openid'], $params['access_token']);
+        $cookie = $this->createCookie($params['openid'], $params['access_token'], empty($accessType) || !($accessType === 'wx'));
         $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
             'form_params' => [
                 'iChartId' => 318948,
@@ -229,12 +233,13 @@ class Game
     public function logs(): Json
     {
         $params = Request::only(['openid', 'access_token', 'type']);
+        $accessType = Request::header('acctype');
         if (empty($params['openid']) || empty($params['access_token'])) {
             return Response::json(-1, '缺少参数');
         }
 
         $type = $params['type'] ?? 1;
-        $cookie = $this->createCookie($params['openid'], $params['access_token']);
+        $cookie = $this->createCookie($params['openid'], $params['access_token'], empty($accessType) || !($accessType === 'wx'));
         $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
             'form_params' => [
                 'iChartId' => 319386,
@@ -258,12 +263,13 @@ class Game
     public function recent(): Json
     {
         $params = Request::only(['openid', 'access_token', 'type']);
+        $accessType = Request::header('acctype');
         if (empty($params['openid']) || empty($params['access_token'])) {
             return Response::json(-1, '缺少参数');
         }
 
         $type = $params['type'] ?? 1;
-        $cookie = $this->createCookie($params['openid'], $params['access_token']);
+        $cookie = $this->createCookie($params['openid'], $params['access_token'], empty($accessType) || !($accessType === 'wx'));
         $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
             'form_params' => [
                 'iChartId' => 316969,
@@ -284,12 +290,13 @@ class Game
     public function achievement(): Json
     {
         $params = Request::only(['openid', 'access_token', 'type']);
+        $accessType = Request::header('acctype');
         if (empty($params['openid']) || empty($params['access_token'])) {
             return Response::json(-1, '缺少参数');
         }
 
         $type = $params['type'] ?? 1;
-        $cookie = $this->createCookie($params['openid'], $params['access_token']);
+        $cookie = $this->createCookie($params['openid'], $params['access_token'], empty($accessType) || !($accessType === 'wx'));
         $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
             'form_params' => [
                 'iChartId' => 316969,
@@ -314,12 +321,13 @@ class Game
     public function password(): Json
     {
         $params = Request::only(['openid', 'access_token', 'type']);
+        $accessType = Request::header('acctype');
         if (empty($params['openid']) || empty($params['access_token'])) {
             return Response::json(-1, '缺少参数');
         }
 
         $type = $params['type'] ?? 1;
-        $cookie = $this->createCookie($params['openid'], $params['access_token']);
+        $cookie = $this->createCookie($params['openid'], $params['access_token'], empty($accessType) || !($accessType === 'wx'));
         $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
             'form_params' => [
                 'iChartId' => 384918,
@@ -352,12 +360,13 @@ class Game
     public function manufacture(): Json
     {
         $params = Request::only(['openid', 'access_token', 'type']);
+        $accessType = Request::header('acctype');
         if (empty($params['openid']) || empty($params['access_token'])) {
             return Response::json(-1, '缺少参数');
         }
 
         $type = $params['type'] ?? 1;
-        $cookie = $this->createCookie($params['openid'], $params['access_token']);
+        $cookie = $this->createCookie($params['openid'], $params['access_token'], empty($accessType) || !($accessType === 'wx'));
         $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
             'form_params' => [
                 'iChartId' => 365589,
@@ -376,7 +385,8 @@ class Game
     public function guns(): Json
     {
         $params = Request::only(['gunId']);
-        $cookie = $this->createCookie($params['openid'], $params['access_token']);
+        $accessType = Request::header('acctype');
+        $cookie = $this->createCookie($params['openid'], $params['access_token'], empty($accessType) || !($accessType === 'wx'));
         $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
             'form_params' => [
                 'iChartId' => 352143,
@@ -432,12 +442,12 @@ class Game
         return preg_match('/\d+\.\d+x\d+/', $code, $matches) ? 'ammo' . $matches[0] : $code;
     }
 
-    private function createCookie(string $openId, string $accessToken): CookieJar
+    private function createCookie(string $openId, string $accessToken, bool $isQQ = true): CookieJar
     {
         return CookieJar::fromArray([
             'openid' => $openId,
             'access_token' => $accessToken,
-            'acctype' => 'qc',
+            'acctype' => $isQQ ? 'qc' : 'wx',
             'appid' => 101491592,
         ], '.qq.com');
     }
