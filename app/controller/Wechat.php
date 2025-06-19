@@ -7,7 +7,6 @@ use GuzzleHttp\Cookie\CookieJar;
 use think\facade\Request;
 use think\response\Json;
 use GuzzleHttp\Client;
-use QL\QueryList;
 
 class Wechat
 {
@@ -24,7 +23,7 @@ class Wechat
             'version' => 2.0,
         ]);
     }
-    public function login()
+    public function login():  Json
     {
         $response = $this->client->request('GET', 'https://open.weixin.qq.com/connect/qrconnect', [
             'query' => [
@@ -42,11 +41,8 @@ class Wechat
             ],
         ]);
         $result = $response->getBody()->getContents();
-        $qrcodeUrl = QueryList::getInstance()
-            ->html($result)
-            ->find('.js_qrcode_img.web_qrcode_img')
-            ->attr('src')
-        ;
+        preg_match('~/connect/qrcode/[^\s<>"]+~', $result, $qrcode_match);
+        $qrcodeUrl = $qrcode_match[0];
         $uuid = substr($qrcodeUrl, 16);
         $qrcodeUrl = 'https://open.weixin.qq.com'.$qrcodeUrl;
 
@@ -56,7 +52,7 @@ class Wechat
         ]);
     }
 
-    public function status()
+    public function status():  Json
     {
         $uuid = Request::param('uuid') ?? '';
         if (!$uuid || $uuid == '') {
@@ -102,7 +98,7 @@ class Wechat
         ]);
     }
 
-    public function getAccessToken()
+    public function getAccessToken():  Json
     {
         $code = Request::param('code') ?? '';
         if (!$code || $code == '') {
