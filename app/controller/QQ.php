@@ -241,7 +241,7 @@ class QQ
                 'appid' => 101491592,
                 'redirect_uri' => 'https://milo.qq.com/comm-htdocs/login/qc_redirect.html',
                 'callback' => 'miloJsonpCb_86690',
-                '_' => $this->getMicroTime(),
+                '_' => getMicroTime(),
             ],
             'cookies' => $this->cookie,
             'headers' => [
@@ -291,10 +291,5 @@ class QQ
         }
 
         return $hash & 0x7fffffff;
-    }
-
-    private function getMicroTime(): int
-    {
-        return round(microtime(true) * 1000);
     }
 }
