@@ -27,7 +27,7 @@ jobs:
       - name: 设置 PHP 环境
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.0' # 可根据 ThinkPHP 版本调整
+          php-version: '8.1' # 可根据 ThinkPHP 版本调整
           extensions: mbstring, curl, json, openssl, fileinfo
           tools: composer
 
