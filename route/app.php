@@ -7,7 +7,8 @@ Route::group('qq', function () {
     Route::rule('status', 'QQ/getAction');
     Route::rule('access', 'QQ/getAccessToken');
 });
-
-Route::group('game', function () {
-    Route::rule('data', 'Game/getData');
+Route::group('wechat', function () {
+    Route::rule('login', 'Wechat/login');
+    Route::rule('status', 'Wechat/status');
+    Route::rule('access', 'Wechat/getAccessToken');
 });
