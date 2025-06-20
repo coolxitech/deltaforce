@@ -383,8 +383,6 @@ class Game
     public function guns(): Json
     {
         $params = Request::only(['gunId']);
-        $accessType = Request::header('acctype');
-        $cookie = $this->createCookie($params['openid'], $params['access_token'], empty($accessType) || !($accessType === 'wx'));
         $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
             'form_params' => [
                 'iChartId' => 352143,
@@ -398,7 +396,6 @@ class Game
                     'objectID' => $params['gunId'] ?? '',
                 ]),
             ],
-            'cookies' => $cookie,
         ]);
         $data = json_decode($response->getBody()->getContents(), true);
         if ($data['ret'] !== 0) {
