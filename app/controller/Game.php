@@ -27,29 +27,31 @@ class Game
         if (empty($params['openid']) || empty($params['access_token'])) {
             return Response::json(-1, '缺少参数');
         }
-
         $cookie = $this->createCookie($params['openid'], $params['access_token'], empty($accessType) || !($accessType === 'wx'));
         $gameData = [];
 
         $types = [4 => 'gun', 5 => 'operator'];
         foreach ($types as $type => $key) {
-            $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
-                'form_params' => [
-                    'iChartId' => 319386,
-                    'iSubChartId' => 319386,
-                    'sIdeToken' => 'zMemOt',
-                    'type' => $type,
-                    'page' => 1,
-                ],
-                'cookies' => $cookie,
-            ]);
-            $data = json_decode($response->getBody()->getContents(), true);
-            $gameData[$key] = $data['ret'] === 0 ? $data['jData']['data'] : null;
+            for ($i = 1; $i <= 5; $i++) { // 长时间未游戏可能需要翻页获取
+                $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
+                    'form_params' => [
+                        'iChartId' => 319386,
+                        'iSubChartId' => 319386,
+                        'sIdeToken' => 'zMemOt',
+                        'type' => $type,
+                        'page' => $i,
+                    ],
+                    'cookies' => $cookie,
+                ]);
+                $data = json_decode($response->getBody()->getContents(), true);
+                $gameData[$key] = $data['ret'] === 0 ? $data['jData']['data'] : null;
+            }
+            if ($data['ret'] != 0) {
+                return Response::json(-1, '获取失败');
+            }
         }
 
-        return empty($gameData['gun']) && empty($gameData['operator'])
-            ? Response::json(-1, 'AccessToken已失效')
-            : Response::json(0, '获取成功', $gameData);
+        return Response::json(0, '获取成功', $gameData);
     }
 
     public function player(): Json
