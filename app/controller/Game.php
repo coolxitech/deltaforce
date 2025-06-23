@@ -28,7 +28,10 @@ class Game
             return Response::json(-1, '缺少参数');
         }
         $cookie = $this->createCookie($params['openid'], $params['access_token'], empty($accessType) || !($accessType === 'wx'));
-        $gameData = [];
+        $gameData = [
+            'gun' => [],
+            'operator' => [],
+        ];
 
         $types = [4 => 'gun', 5 => 'operator'];
         foreach ($types as $type => $key) {
