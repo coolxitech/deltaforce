@@ -45,8 +45,7 @@ class Game
                 ]);
                 $data = json_decode($response->getBody()->getContents(), true);
                 if ($data['ret'] === 0 && !empty($data['jData']['data'])) {
-                    $gameData[$key] = $data['jData']['data'];
-                    break;
+                    $gameData[$key] = array_merge($gameData[$key], $data['jData']['data']);
                 }
             }
             if ($data['ret'] != 0) {
