@@ -64,5 +64,8 @@
             "url": "https://mirrors.huaweicloud.com/repository/php/",
             "canonical": false
         }
-    ]
+    ],
+    "suggest": {
+        "ext-zend opcache": "*"
+    }
 }
