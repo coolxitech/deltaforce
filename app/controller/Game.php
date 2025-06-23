@@ -44,7 +44,10 @@ class Game
                     'cookies' => $cookie,
                 ]);
                 $data = json_decode($response->getBody()->getContents(), true);
-                $gameData[$key] = $data['ret'] === 0 ? $data['jData']['data'] : null;
+                if ($data['ret'] === 0 && !empty($data['jData']['data'])) {
+                    $gameData[$key] = $data['jData']['data'];
+                    break;
+                }
             }
             if ($data['ret'] != 0) {
                 return Response::json(-1, '获取失败');
