@@ -325,13 +325,12 @@ class Game
 
     public function password(): Json
     {
-        $params = Request::only(['openid', 'access_token', 'type']);
+        $params = Request::only(['openid', 'access_token']);
         $accessType = Request::header('acctype');
         if (empty($params['openid']) || empty($params['access_token'])) {
             return Response::json(-1, '缺少参数');
         }
 
-        $type = $params['type'] ?? 1;
         $cookie = $this->createCookie($params['openid'], $params['access_token'], empty($accessType) || !($accessType === 'wx'));
         $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
             'form_params' => [
@@ -437,6 +436,87 @@ class Game
         }
 
         return Response::json(0, '获取成功', $weapons);
+    }
+
+    public function bind(): Json
+    {
+        $params = Request::only(['openid', 'access_token']);
+        $accessType = Request::header('acctype') ?? 'qc';
+        if (empty($params['openid']) || empty($params['access_token'])) {
+            return Response::json(-1, '缺少参数');
+        }
+
+        $cookie = $this->createCookie($params['openid'], $params['access_token'], empty($accessType) || !($accessType === 'wx'));
+        $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
+            'form_params' => [
+                'iChartId' => 316964,
+                'iSubChartId' => 316964,
+                'sIdeToken' => '95ookO',
+            ],
+            'cookies' => $cookie,
+        ]);
+        $data = json_decode($response->getBody()->getContents(), true);
+        if ($data['ret'] !== 0) {
+            return Response::json(-1, '获取失败,检查鉴权是否过期');
+        }
+        if (empty($data['jData']['bindarea'])) { // 未绑定游戏角色
+            // 获取角色信息
+            $response = $this->client->request('GET', 'https://comm.aci.game.qq.com/main', [
+                'query' => [
+                    'needGopenid' => 1,
+                    'sAMSAcctype' => $accessType == 'qc' ? 'qq' : 'wx',
+                    'sAMSAccessToken' => $params['access_token'],
+                    'sAMSAppOpenId' => '6643FFA415565F5C49F7BEC14B0E8C1C',
+                    'sAMSSourceAppId' => '101491592',
+                    'game' => 'dfm',
+                    'sCloudApiName' => 'ams.gameattr.role',
+                    'area' => 36,
+                    'platid' => 1,
+                    'partition' => 36
+                ],
+                'headers' => [
+                    'referer' => 'https://df.qq.com/',
+                ],
+            ]);
+            $result = $response->getBody()->getContents();
+            preg_match("/\{([^}]*)}/", $result, $matches);
+            preg_match_all("/(\w+):('[^']*'|-?\d+|[^,]*)/", $matches[1], $pairs, PREG_SET_ORDER);
+            $data = [];
+            foreach ($pairs as $pair) {
+                $key = $pair[1];
+                $value = trim($pair[2], "'"); // 去除单引号
+                if ($key == 'msg') {
+                    $data[$key] = mb_convert_encoding($value, 'UTF-8', 'GBK');
+                } else {
+                    $data[$key] = $value;
+                }
+            }
+            $roleId = explode('|', $data['checkparam'])[2];
+            // 开始提交绑定
+            $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
+                'form_params' => [
+                    'iChartId' => 316965,
+                    'iSubChartId' => 316965,
+                    'sIdeToken' => 'sTzZS2',
+                    'sArea' => 36,
+                    'sPlatId' => 1,
+                    'sPartition' => 36,
+                    'sCheckparam' => $data['checkparam'],
+                    'sRoleId' => $roleId,
+                    'md5str' => $data['md5str'],
+                ],
+                'cookies' => $cookie,
+            ]);
+            $result = $response->getBody()->getContents();
+            $data = json_decode($result, true);
+            if ($data['ret'] !== 0) {
+                return Response::json(-1, '绑定失败');
+            } else {
+                return Response::json(1, '获取成功', $data['jData']['bindarea']);
+            }
+        }
+        return Response::json(0, '获取成功', $data['jData']['bindarea']);
+
     }
 
     private function normalizeCaliberCode(string $code): string
