@@ -47,6 +47,12 @@
     },
     "repositories": [
         {
+            "description": "官方镜像",
+            "type": "composer",
+            "url": "https://repo.packagist.org",
+            "canonical": false
+        },
+        {
             "description": "阿里云镜像",
             "type": "composer",
             "url": "https://mirrors.aliyun.com/composer/",
