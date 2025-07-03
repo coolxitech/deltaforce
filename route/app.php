@@ -12,3 +12,8 @@ Route::group('wechat', function () {
     Route::rule('status', 'Wechat/status');
     Route::rule('access', 'Wechat/getAccessToken');
 });
+Route::group('qqsafe', function () {
+    Route::rule('sig', 'QQSafe/getQrSig');
+    Route::rule('status', 'QQSafe/getAction');
+    Route::rule('access', 'QQSafe/getAccessToken');
+});
