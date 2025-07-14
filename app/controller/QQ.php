@@ -277,15 +277,15 @@ class QQ
         return $cookies[$name] ?? null;
     }
 
-    private function getGTK(string $skey): int
+    private function getGTK(string $sKey): int
     {
         $hash = 5381;
-        $len = strlen($skey);
+        $len = strlen($sKey);
 
         for ($i = 0; $i < $len; $i++) {
             // Using ord() to get ASCII value similar to charCodeAt()
             // Left shift and addition operations are the same
-            $hash += ($hash << 5) + ord($skey[$i]);
+            $hash += ($hash << 5) + ord($sKey[$i]);
             // Ensure 32-bit integer precision by applying bitwise AND with 0x7fffffff
             $hash = $hash & 0x7fffffff;
         }
