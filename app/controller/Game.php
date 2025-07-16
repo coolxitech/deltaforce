@@ -227,6 +227,9 @@ class Game
         ]);
         $data = json_decode($response->getBody()->getContents(), true);
         if ($data['ret'] !== 0) {
+            if ($data['ret'] === -4000) {
+                return Response::json(-2, '您的账号由于腾讯内部错误无法使用这个功能');
+            }
             return Response::json(-1, '获取失败,检查鉴权是否过期');
         }
 
