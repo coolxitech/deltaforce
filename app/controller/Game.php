@@ -314,7 +314,7 @@ class Game
                 'source' => '5',
                 'param' => json_encode([
                     'resourceType' => 'sol',
-                    'seasonid' => [1, 2, 3, 4],
+                    'seasonid' => [1, 2, 3, 4, 5],
                     'isAllSeason' => true,
                 ]),
             ],
@@ -323,7 +323,7 @@ class Game
         $data = json_decode($response->getBody()->getContents(), true);
         return $data['ret'] !== 0
             ? Response::json(-1, '获取失败,检查鉴权是否过期')
-            : Response::json(0, '获取成功', $data['jData']['data']['data']['solDetail']);
+            : Response::json(0, '获取成功', $data['jData']['data']['data']['solDetail'] ?? []);
     }
 
     public function password(): Json
