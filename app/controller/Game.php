@@ -355,7 +355,7 @@ class Game
         }
 
         $rooms = [];
-        preg_match_all('/^(.+?):(\d{4});$/m', $data['jData']['data']['data']['content']['secretDay']['data'][0]['desc'], $matches, PREG_SET_ORDER);
+        preg_match_all('/^(.+?):(\d{4});?\s*(?:\n|$)/mu', $data['jData']['data']['data']['content']['secretDay']['data'][0]['desc'], $matches, PREG_SET_ORDER);
         foreach ($matches as $match) {
             $rooms[$match[1]] = $match[2];
         }
