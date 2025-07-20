@@ -355,11 +355,9 @@ class Game
         }
 
         $rooms = [];
-        foreach (explode(";\n", $data['jData']['data']['data']['content']['secretDay']['data'][0]['desc']) as $value) {
-            if (str_contains($value, ':')) {
-                [$key, $val] = explode(':', $value, 2);
-                $rooms[trim($key)] = (int) trim($val);
-            }
+        preg_match_all('/^(.+?):(\d{4});$/m', $data['jData']['data']['data']['content']['secretDay']['data'][0]['desc'], $matches, PREG_SET_ORDER);
+        foreach ($matches as $match) {
+            $rooms[$match[1]] = $match[2];
         }
         return Response::json(0, '获取成功', $rooms);
     }
