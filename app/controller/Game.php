@@ -467,7 +467,7 @@ class Game
                     'needGopenid' => 1,
                     'sAMSAcctype' => $accessType == 'qc' ? 'qq' : 'wx',
                     'sAMSAccessToken' => $params['access_token'],
-                    'sAMSAppOpenId' => '6643FFA415565F5C49F7BEC14B0E8C1C',
+                    'sAMSAppOpenId' => $params['openid'],
                     'sAMSSourceAppId' => '101491592',
                     'game' => 'dfm',
                     'sCloudApiName' => 'ams.gameattr.role',
