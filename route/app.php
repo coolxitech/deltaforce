@@ -18,8 +18,15 @@ Route::group('qqsafe', function () {
     Route::rule('access', 'QQSafe/getAccessToken');
 });
 Route::group('wegame', function () {
-    Route::rule('sig', 'Wegame/getQrSig');
-    Route::rule('status', 'Wegame/getAction');
-    Route::rule('access', 'Wegame/getAccessToken');
+    Route::group('qq', function () {
+        Route::rule('sig', 'Wegame/getQrSig');
+        Route::rule('status', 'Wegame/getAction');
+        Route::rule('access', 'Wegame/getAccessToken');
+    });
+    Route::group('wechat', function () {
+        Route::rule('login', 'Wegame/login');
+        Route::rule('status', 'Wegame/status');
+        Route::rule('access', 'Wegame/getWechatAccessToken');
+    });
     Route::rule('gift', 'Wegame/gift');
 });
