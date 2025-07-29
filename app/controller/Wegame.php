@@ -278,4 +278,127 @@ class Wegame
         }
         return Response::json(0, '领取成功', $rewards);
     }
+
+    public function login():  Json
+    {
+        $response = $this->client->request('GET', 'https://open.weixin.qq.com/connect/qrconnect', [
+            'query' => [
+                'appid' => 'wx911818d5d92affa8',
+                'scope' => 'snsapi_login',
+                'redirect_uri' => 'https://www.wegame.com.cn/login/callback.html?t=wx&c=0&a=0',
+                'state' => 1,
+                'login_type' => 'jssdk',
+                'self_redirect' => true,
+                'ts' => getMicroTime(),
+                'style' => 'black',
+            ],
+            'headers' => [
+                'referer' => 'https://df.qq.com/',
+            ],
+        ]);
+        $result = $response->getBody()->getContents();
+        preg_match('~/connect/qrcode/[^\s<>"]+~', $result, $qrcode_match);
+        $qrcodeUrl = $qrcode_match[0];
+        $uuid = substr($qrcodeUrl, 16);
+        $qrcodeUrl = 'https://open.weixin.qq.com'.$qrcodeUrl;
+
+        return Response::json(0, '获取成功', [
+            'qrCode' => $qrcodeUrl,
+            'uuid' => $uuid,
+        ]);
+    }
+
+    public function status():  Json
+    {
+        $uuid = Request::param('uuid') ?? '';
+        if (!$uuid || $uuid == '') {
+            return Response::json(-1, '缺少参数');
+        }
+        $response = $this->client->request('GET', 'https://lp.open.weixin.qq.com/connect/l/qrconnect', [
+            'query' => [
+                'uuid' => $uuid,
+            ],
+        ]);
+        $result = $response->getBody()->getContents();
+        preg_match('/wx_errcode=(\d+);/', $result, $errcode_match);
+        preg_match('/wx_code=\'([^\']*)\';/', $result, $code_match);
+        $wx_errcode = (int) $errcode_match[1] ?? null;
+        $wx_code = $code_match[1] ?? null;
+
+        if ($wx_errcode == 402) {
+            return Response::json(-2, '二维码超时');
+        }
+
+        if ($wx_errcode == 408) {
+            return Response::json(1, '等待扫描');
+        }
+
+        if ($wx_errcode == 404) {
+            return Response::json(2, '已扫码');
+        }
+
+        if ($wx_errcode == 405) {
+            return Response::json(3, '扫码成功', [
+                'wx_errcode' => $wx_errcode,
+                'wx_code' => $wx_code,
+            ]);
+        }
+
+        if ($wx_errcode == 403) {
+            return Response::json(-3, '扫码被拒绝');
+        }
+
+        return Response::json(-4, '其他错误代码', [
+            'wx_errcode' => $wx_errcode,
+            'wx_code' => $wx_code,
+        ]);
+    }
+
+    public function getWechatAccessToken():  Json
+    {
+
+        $code = Request::param('code') ?? '';
+        if (!$code || $code == '') {
+            return Response::json(-1, '缺少参数');
+        }
+        $response = $this->client->request('POST', 'https://www.wegame.com.cn/api/middle/clientapi/auth/login_by_wechat', [
+            'json' => [
+                'clienttype' => '1000005',
+                'mappid' => '10001',
+                'mcode' => '',
+                'config_params' => [
+                    'lang_type' => 0,
+                ],
+                'login_info' => [
+                    'wx_info_type' => 1,
+                    'appid' => 'wx911818d5d92affa8',
+                    'code' => $code,
+                ],
+            ],
+            'headers' => [
+                'referer' => 'https://www.wegame.com.cn/login/callback.html',
+            ],
+        ]);
+
+        $result = $response->getBody()->getContents();
+        $data = json_decode($result, true);
+        if ($data['code'] == 0 && $data['data']['error_code'] == 0) {
+            $cookies = $this->cookie->toArray();
+            return Response::json(0, '获取成功', [
+                'tgp_id' => $this->findArrayMemberByName($cookies, 'tgp_id'),
+                'tgp_ticket' => $this->findArrayMemberByName($cookies, 'tgp_ticket'),
+            ]);
+        } else {
+            return Response::json(-1, '获取失败:'.$data['data']['errmsg']);
+        }
+    }
+
+    private function findArrayMemberByName($array, $searchName) {
+        foreach ($array as $item) {
+            if (isset($item['Name']) && $item['Name'] === $searchName) {
+                return $item['Value'];
+            }
+        }
+        return '';
+    }
 }
