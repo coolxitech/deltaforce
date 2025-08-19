@@ -63,12 +63,6 @@
             "type": "composer",
             "url": "https://mirrors.cloud.tencent.com/composer/",
             "canonical": false
-        },
-        {
-            "description": "华为云镜像",
-            "type": "composer",
-            "url": "https://mirrors.huaweicloud.com/repository/php/",
-            "canonical": false
         }
     ],
     "suggest": {
