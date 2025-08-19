@@ -337,15 +337,12 @@ class Game
         $cookie = $this->createCookie($params['openid'], $params['access_token'], empty($accessType) || !($accessType === 'wx'));
         $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
             'form_params' => [
-                'iChartId' => 384918,
-                'iSubChartId' => 384918,
-                'sIdeToken' => 'mbq5GZ',
-                'method' => 'dist.contents',
-                'source' => 5,
-                'param' => json_encode([
-                    'distType' => 'bannerManage',
-                    'contentType' => 'secretDay',
-                ]),
+                'iChartId' => 352143,
+                'iSubChartId' => 352143,
+                'sIdeToken' => 'YWRywA',
+                'method' => 'dfm/center.day.secret',
+                'source' => 2,
+                'param' => json_encode([]),
             ],
             'cookies' => $cookie,
         ]);
@@ -353,11 +350,9 @@ class Game
         if ($data['ret'] !== 0) {
             return Response::json(-1, '获取失败,检查鉴权是否过期');
         }
-
         $rooms = [];
-        preg_match_all('/^(.+?):(\d{4});?\s*(?:\n|$)/mu', $data['jData']['data']['data']['content']['secretDay']['data'][0]['desc'], $matches, PREG_SET_ORDER);
-        foreach ($matches as $match) {
-            $rooms[$match[1]] = $match[2];
+        foreach ($data['jData']['data']['data']['list'] as $datum) {
+            $rooms[$datum['mapName']] = $datum['secret'];
         }
         return Response::json(0, '获取成功', $rooms);
     }
