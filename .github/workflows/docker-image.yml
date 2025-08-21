@@ -1,52 +1,35 @@
-name: Build and Push Docker Image to GHCR
+# 使用官方 PHP 8 FPM 镜像作为基础
+FROM php:8.2-fpm
 
-on:
-  push:
-    branches: ["main"]
-  pull_request:
-    branches: ["main"]
+# 设置工作目录
+WORKDIR /var/www/html
 
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+# 安装系统依赖
+RUN apt-get update && apt-get install -y \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libzip-dev \
+    unzip \
+    git \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install gd zip pdo pdo_mysql
 
-jobs:
-  build-and-push:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
+# 安装 Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+# 复制项目文件
+COPY . .
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+# 安装项目依赖
+RUN composer install --no-dev --optimize-autoloader
 
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+# 设置文件权限
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html/storage
 
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=sha
+# 暴露端口（ThinkPHP 内置服务器默认 8000）
+EXPOSE 8000
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+# 启动 ThinkPHP 内置服务器
+CMD ["php", "think", "run", "-H", "0.0.0.0", "-p", "8000"]
