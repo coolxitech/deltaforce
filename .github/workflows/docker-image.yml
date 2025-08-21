@@ -1,4 +1,4 @@
-name: Build and Push Docker Image to GHCR
+name: 构建并推送 Docker 镜像到 GHCR
 
 on:
   push:
@@ -18,20 +18,20 @@ jobs:
       packages: write
 
     steps:
-      - name: Checkout repository
+      - name: 检出代码
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
+      - name: 设置 Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to GitHub Container Registry
+      - name: 登录到 GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata (tags, labels) for Docker
+      - name: 提取 Docker 镜像元数据（标签、元信息）
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -42,7 +42,8 @@ jobs:
             type=semver,pattern={{version}}
             type=sha
 
-      - name: Build and push Docker image
+      - name: 构建并推送 Docker 镜像
+        id: build
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -50,3 +51,14 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          outputs: type=registry
+
+      - name: 生成中文构建摘要
+        run: |
+          echo "Docker 镜像构建摘要："
+          echo "镜像名称: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
+          echo "标签: ${{ steps.meta.outputs.tags }}"
+          echo "构建时间: $(date '+%Y年%m月%d日 %H:%M:%S')"
+          echo "构建状态: 成功"
+          echo "仓库: ${{ github.repository }}"
+          echo "提交 SHA: ${{ github.sha }}"
