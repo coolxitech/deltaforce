@@ -18,12 +18,15 @@ class QQSafe
 
     public function __construct()
     {
+        $curlVersion = curl_version(); // 获取curl版本信息
+        $http2Supported = isset($curlVersion['features']) && ($curlVersion['features'] & CURL_VERSION_HTTP2) !== 0; // 判断是否支持http2
+        $httpVersion = $http2Supported ? 2.0 : 1.1;
         $this->cookie = new CookieJar();
         $this->client = new Client([
             'cookies' => $this->cookie,
             'allow_redirects' => false,
             'verify' => false,
-            'version' => 2.0,
+            'version' => $httpVersion,
         ]);
     }
 

@@ -11,7 +11,7 @@ class Steam
 {
     public function index()
     {
-        $token = Request::param('token'); // 需要Steam的指定Coooie字符串(steamLoginSecure)
+        $token = Request::param('token'); // 需要Steam的指定Cookie字符串(steamLoginSecure)
         $client = new Client();
         $response = $client->request('GET', 'https://help.steampowered.com/zh-cn/wizard/VacBans', [
             'cookies' => CookieJar::fromArray([

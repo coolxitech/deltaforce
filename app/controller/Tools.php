@@ -13,9 +13,12 @@ class Tools
     private array $fixedGridSizes = [1, 2, 4, 6, 9];
     public function __construct()
     {
+        $curlVersion = curl_version(); // 获取curl版本信息
+        $http2Supported = isset($curlVersion['features']) && ($curlVersion['features'] & CURL_VERSION_HTTP2) !== 0; // 判断是否支持http2
+        $httpVersion = $http2Supported ? 2.0 : 1.1;
         $this->client = new Client([
             'verify' => false,
-            'version' => 2.0,
+            'version' => $httpVersion,
         ]);
         $this->items = $this->items('props', 'collection');
     }
