@@ -10,20 +10,24 @@ use GuzzleHttp\Cookie\CookieJar;
 use GuzzleHttp\Exception\BadResponseException;
 use think\facade\Request;
 use think\response\Json;
-
+const APPID = 101491592;
 class QQ
 {
     protected Client $client;
     protected CookieJar $cookie;
 
+
     public function __construct()
     {
         $this->cookie = new CookieJar();
+        $curlVersion = curl_version(); // 获取curl版本信息
+        $http2Supported = isset($curlVersion['features']) && ($curlVersion['features'] & CURL_VERSION_HTTP2) !== 0; // 判断是否支持http2
+        $httpVersion = $http2Supported ? 2.0 : 1.1;
         $this->client = new Client([
             'cookies' => $this->cookie,
             'allow_redirects' => false,
             'verify' => false,
-            'version' => 2.0,
+            'version' => $httpVersion,
         ]);
     }
 
@@ -42,7 +46,7 @@ class QQ
                 'v' => 4,
                 't' => 0.6142752744667854,
                 'daid' => 383,
-                'pt_3rd_aid' => 101491592,
+                'pt_3rd_aid' => APPID,
                 'u1' => 'https://graph.qq.com/oauth2.0/login_jump',
             ],
         ]);
@@ -78,7 +82,7 @@ class QQ
                 'hide_border' => 1,
                 'target' => 'self',
                 's_url' => 'https://graph.qq.com/oauth2.0/login_jump',
-                'pt_3rd_aid' => 101491592,
+                'pt_3rd_aid' => APPID,
                 'pt_feedback_link' => 'https://support.qq.com/products/77942?customInfo=milo.qq.com.appid101491592',
                 'theme' => 2,
                 'verify_theme',
@@ -125,7 +129,7 @@ class QQ
                     'pt_uistyle' => 40,
                     'aid' => 716027609,
                     'daid' => 383,
-                    'pt_3rd_aid' => 101491592,
+                    'pt_3rd_aid' => APPID,
                     null,
                     'o1vId' => '378b06c889d9113b39e814ca627809e3',
                     'pt_js_version' => '530c3f68',
@@ -208,7 +212,7 @@ class QQ
         $response = $this->client->request('POST', 'https://graph.qq.com/oauth2.0/authorize', [
             'form_params' => [
                 'response_type' => 'code',
-                'client_id' => '101491592',
+                'client_id' => APPID,
                 'redirect_uri' => 'https://milo.qq.com/comm-htdocs/login/qc_redirect.html?parent_domain=https://df.qq.com&isMiloSDK=1&isPc=1',
                 'scope',
                 'state' => 'STATE',
@@ -238,9 +242,9 @@ class QQ
             'query' => [
                 'a' => 'qcCodeToOpenId',
                 'qc_code' => $qcCode,
-                'appid' => 101491592,
+                'appid' => APPID,
                 'redirect_uri' => 'https://milo.qq.com/comm-htdocs/login/qc_redirect.html',
-                'callback' => 'miloJsonpCb_86690',
+                'callback' => 'coolxitech',
                 '_' => getMicroTime(),
             ],
             'cookies' => $this->cookie,
@@ -249,7 +253,7 @@ class QQ
             ],
         ]);
         $result = $response->getBody()->getContents();
-        preg_match('/miloJsonpCb_86690\((.*?)\)/', $result, $matches);
+        preg_match('/coolxitech\((.*?)\)/', $result, $matches);
         $result = $matches[1];
         $data = json_decode($result, true);
         if ($data['iRet'] != 0) {
@@ -268,6 +272,42 @@ class QQ
             'expires_in' => $data['expires_in'],
             'openid' => $data['openid'],
         ]);
+    }
+
+    public function updateAccessToken(): Json
+    {
+        $cookie = Request::param('cookie');
+        if (str_contains($cookie, '\\')) { // 判断cookie字符串中有转义字符
+            $cookie = stripslashes($cookie); // 去除转义字符
+        }
+        $openId = Request::param('openid');
+        $accessToken = Request::param('access_token');
+        $cookies = json_decode($cookie, true);
+        $this->cookie = $this->cookie::fromArray($cookies, '.ptlogin2.qq.com');
+        $response = $this->client->request('POST', 'https://ams.game.qq.com/ams/userLoginSvr', [
+            'query' => [
+                'callback' => 'coolxitech',
+                'acctype' => 'qc',
+                'appid' => APPID,
+                'access_token' => $accessToken,
+                'openid' => $openId,
+                'refresh_token',
+                'ieg_ams_sign' => 'null',
+                'expires_time' => 'null',
+                '_' => getMicroTime(),
+            ],
+            'cookies' => $this->cookie,
+            'headers' => [
+                'referer' => 'https://df.qq.com/',
+            ],
+        ]);
+        $result = $response->getBody()->getContents();
+        preg_match('/coolxitech\((.*?)\);/', $result, $matches);
+        $data = json_decode($matches[1], true);
+        if ($data['isLogin'] != 1) {
+            return Response::json(-1, '更新失败');
+        }
+        return Response::json(0, '更新成功');
     }
 
 

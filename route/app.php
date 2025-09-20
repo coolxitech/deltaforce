@@ -6,11 +6,13 @@ Route::group('qq', function () {
     Route::rule('sig', 'QQ/getQrSig');
     Route::rule('status', 'QQ/getAction');
     Route::rule('access', 'QQ/getAccessToken');
+    Route::rule('update_access', 'QQ/updateAccessToken');
 });
 Route::group('wechat', function () {
     Route::rule('login', 'Wechat/login');
     Route::rule('status', 'Wechat/status');
     Route::rule('access', 'Wechat/getAccessToken');
+    Route::rule('update_access', 'Wechat/updateAccessToken');
 });
 Route::group('qqsafe', function () {
     Route::rule('sig', 'QQSafe/getQrSig');

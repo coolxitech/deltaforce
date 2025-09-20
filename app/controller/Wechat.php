@@ -8,6 +8,7 @@ use think\facade\Request;
 use think\response\Json;
 use GuzzleHttp\Client;
 
+const APPID = 'wxfa0c35392d06b82f';
 class Wechat
 {
     protected Client $client;
@@ -30,9 +31,9 @@ class Wechat
     {
         $response = $this->client->request('GET', 'https://open.weixin.qq.com/connect/qrconnect', [
             'query' => [
-                'appid' => 'wxfa0c35392d06b82f',
+                'appid' => APPID,
                 'scope' => 'snsapi_login',
-                'redirect_uri' => 'https://iu.qq.com/comm-htdocs/login/milosdk/wx_pc_redirect.html?appid=wxfa0c35392d06b82f&sServiceType=undefined&originalUrl=https%3A%2F%2Fdf.qq.com%2Fcp%2Frecord202410ver%2F&oriOrigin=https%3A%2F%2Fdf.qq.com',
+                'redirect_uri' => 'https://iu.qq.com/comm-htdocs/login/milosdk/wx_pc_redirect.html?appid='.APPID.'&sServiceType=undefined&originalUrl=https%3A%2F%2Fdf.qq.com%2Fcp%2Frecord202410ver%2F&oriOrigin=https%3A%2F%2Fdf.qq.com',
                 'state' => 1,
                 'login_type' => 'jssdk',
                 'self_redirect' => true,
@@ -110,7 +111,7 @@ class Wechat
         $response = $this->client->request('GET', 'https://apps.game.qq.com/ams/ame/codeToOpenId.php', [
             'query' => [
                 'callback' => '',
-                'appid' => 'wxfa0c35392d06b82f',
+                'appid' => APPID,
                 'wxcode' => $code,
                 'originalUrl' => 'https://df.qq.com/cp/record202410ver/',
                 'wxcodedomain' => 'iu.qq.com',
@@ -136,5 +137,41 @@ class Wechat
             ]);
         }
         return Response::json(-2, '获取失败:'.$data['sMsg']);
+    }
+
+    public function updateAccessToken(): Json
+    {
+        $cookie = Request::param('cookie');
+        if (str_contains($cookie, '\\')) { // 判断cookie字符串中有转义字符
+            $cookie = stripslashes($cookie); // 去除转义字符
+        }
+        $openId = Request::param('openid');
+        $accessToken = Request::param('access_token');
+        $cookies = json_decode($cookie, true);
+        $this->cookie = $this->cookie::fromArray($cookies, '.ptlogin2.qq.com');
+        $response = $this->client->request('POST', 'https://ams.game.qq.com/ams/userLoginSvr', [
+            'query' => [
+                'callback' => 'coolxitech',
+                'acctype' => 'wx',
+                'appid' => APPID,
+                'access_token' => $accessToken,
+                'openid' => $openId,
+                'refresh_token',
+                'ieg_ams_sign' => 'null',
+                'expires_time' => 'null',
+                '_' => getMicroTime(),
+            ],
+            'cookies' => $this->cookie,
+            'headers' => [
+                'referer' => 'https://df.qq.com/',
+            ],
+        ]);
+        $result = $response->getBody()->getContents();
+        preg_match('/coolxitech\((.*?)\);/', $result, $matches);
+        $data = json_decode($matches[1], true);
+        if ($data['isLogin'] != 1) {
+            return Response::json(-1, '更新失败');
+        }
+        return Response::json(0, '更新成功');
     }
 }
