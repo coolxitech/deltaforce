@@ -231,6 +231,67 @@ class Wegame
         return $cookies[$name] ?? null;
     }
 
+    public function card()
+    {
+        $id = Request::param('id');
+        $ticket = Request::param('ticket');
+        if (!$id || !$ticket) {
+            return Response::json(-1, '缺少参数');
+        }
+        $this->cookie = $this->cookie::fromArray([
+            'tgp_id' => $id,
+            'tgp_ticket' => $ticket,
+        ], '.wegame.com.cn');
+        $response = $this->client->request('POST', 'https://www.wegame.com.cn/api/v1/wegame.pallas.dfm.DfmSocial/GetUserCards', [
+            'cookies' => $this->cookie,
+            'json' => [
+                'from_src' => '三角洲行动',
+            ],
+            'headers' => [
+                'referer' => 'https://www.wegame.com.cn/helper/df/',
+            ],
+        ]);
+        $result = $response->getBody()->getContents();
+        $data = json_decode($result, true);
+        if ($data['result']['error_code'] != 0) {
+            return Response::json(-1, '获取卡牌信息失败');
+        }
+        if ($data['has_drawn_today']) {
+            return Response::json(0, '今日已抽卡');
+        }
+        $response = $this->client->request('POST', 'https://www.wegame.com.cn/api/v1/wegame.pallas.dfm.DfmSocial/DrawCard', [
+            'cookies' => $this->cookie,
+            'json' => [
+                'from_src' => '三角洲行动',
+            ],
+            'headers' => [
+                'referer' => 'https://www.wegame.com.cn/helper/df/',
+            ],
+        ]);
+        $result = $response->getBody()->getContents();
+        $data = json_decode($result, true);
+        if ($data['result']['error_code'] != 0) {
+            return Response::json(-1, '抽取卡牌失败');
+        }
+        $reward = $data['card']['data_name'];
+        $response = $this->client->request('POST', 'https://www.wegame.com.cn/api/v1/wegame.pallas.dfm.DfmSocial/GetCardsBestCombination', [
+            'cookies' => $this->cookie,
+            'json' => [
+                'from_src' => '三角洲行动',
+            ],
+            'headers' => [
+                'referer' => 'https://www.wegame.com.cn/helper/df/',
+            ],
+        ]);
+        $result = $response->getBody()->getContents();
+        $data = json_decode($result, true);
+        if ($data['result']['error_code'] != 0) {
+            return Response::json(-1, '获取卡牌组合失败');
+        }
+        $current_name = $data['current']['name'];
+        return Response::json(0, $current_name, $reward);
+    }
+
     public function gift()
     {
 
