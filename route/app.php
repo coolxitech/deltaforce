@@ -31,4 +31,5 @@ Route::group('wegame', function () {
         Route::rule('access', 'Wegame/getWechatAccessToken');
     });
     Route::rule('gift', 'Wegame/gift');
+    Route::rule('card', 'Wegame/card');
 });
