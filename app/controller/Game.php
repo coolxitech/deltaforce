@@ -518,6 +518,30 @@ class Game
 
     }
 
+    public function firearmModList()
+    {
+        $page = Request::get('page', 1);
+        $pageSize = Request::get('page_size', 10);
+        $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
+            'form_params' => [
+                'iChartId' => 352143,
+                'iSubChartId' => 352143,
+                'sIdeToken' => 'YWRywA',
+                'source' => 2,
+                'method' => 'dfm/solution.arms.list',
+                'param' => json_encode([
+                    'page' => (int) $page,
+                    'limit' => (int) $pageSize,
+                    'solutionType' => 'gun',
+                ]),
+            ],
+        ]);
+        $data = json_decode($response->getBody()->getContents(), true);
+        return $data['ret'] !== 0
+            ? Response::json(-1, '获取失败,检查鉴权是否过期')
+            : Response::json(0, '获取成功', $data['jData']['data']['data']['list']);
+    }
+
     private function normalizeCaliberCode(string $code): string
     {
         return preg_match('/\d+\.\d+x\d+/', $code, $matches) ? 'ammo' . $matches[0] : $code;
