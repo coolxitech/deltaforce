@@ -231,7 +231,7 @@ class Wegame
         return $cookies[$name] ?? null;
     }
 
-    public function card()
+    public function card(): Json
     {
         $id = Request::param('id');
         $ticket = Request::param('ticket');
