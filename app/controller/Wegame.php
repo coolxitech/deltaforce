@@ -271,10 +271,9 @@ class Wegame
         $result = $response->getBody()->getContents();
         $data = json_decode($result, true);
         if ($data['result']['error_code'] != 0) {
-            return Response::json(-1, '抽取卡牌失败');
+            return Response::json(-1, '自动抽取卡牌失败');
         }
-        $reward = $data['card']['data_name'];
-        $response = $this->client->request('POST', 'https://www.wegame.com.cn/api/v1/wegame.pallas.dfm.DfmSocial/GetCardsBestCombination', [
+        $response = $this->client->request('POST'， 'https://www.wegame.com.cn/api/v1/wegame.pallas.dfm.DfmSocial/GetCardsBestCombination', [
             'cookies' => $this->cookie,
             'json' => [
                 'from_src' => '三角洲行动',
@@ -288,11 +287,10 @@ class Wegame
         if ($data['result']['error_code'] != 0) {
             return Response::json(-1, '获取卡牌组合失败');
         }
-        $current_name = $data['current']['name'];
-        return Response::json(0, $current_name, $reward);
+        return Response::json(0， '获取成功', $data['cards']);
     }
 
-    public function gift()
+    公共 function gift()
     {
 
         $id = Request::param('id');
@@ -303,9 +301,9 @@ class Wegame
         $this->cookie = $this->cookie::fromArray([
             'tgp_id' => $id,
             'tgp_ticket' => $ticket,
-        ], '.wegame.com.cn');
+        ]， '.wegame。com。cn');
         // 打开保险箱礼包
-        $response = $this->client->request('POST', 'https://www.wegame.com.cn/api/v1/wegame.pallas.dfm.DfmSocial/OpenTreasureChest', [
+        $response = $this->client->request('POST'， 'https://www.wegame.com.cn/api/v1/wegame.pallas.dfm.DfmSocial/OpenTreasureChest'， [
             'cookies' => $this->cookie,
             'json' => [
                 'account_type' => 1,
