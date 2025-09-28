@@ -257,7 +257,7 @@ class Wegame
             return Response::json(-1, '获取卡牌信息失败');
         }
         if ($data['has_drawn_today']) {
-            return Response::json(0, '今日已抽卡');
+            return Response::json(0, '今日已抽卡', $data['cards']);
         }
         $response = $this->client->request('POST', 'https://www.wegame.com.cn/api/v1/wegame.pallas.dfm.DfmSocial/DrawCard', [
             'cookies' => $this->cookie,
