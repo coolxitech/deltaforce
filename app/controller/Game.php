@@ -85,7 +85,6 @@ class Game
                 'iChartId' => 317814,
                 'iSubChartId' => 317814,
                 'sIdeToken' => 'QIRBwm',
-                'seasonid' => $seasonId,
             ],
             'cookies' => $cookie,
         ]);
@@ -533,6 +532,29 @@ class Game
                     'page' => (int) $page,
                     'limit' => (int) $pageSize,
                     'solutionType' => 'gun',
+                ]),
+            ],
+        ]);
+        $data = json_decode($response->getBody()->getContents(), true);
+        return $data['ret'] !== 0
+            ? Response::json(-1, '获取失败,检查鉴权是否过期')
+            : Response::json(0, '获取成功', $data['jData']['data']['data']['list']);
+    }
+
+    public function recommendation(): Json
+    {
+        $place = Request::get('place', 'tech');
+        $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
+            'form_params' => [
+                'iChartId' => 352143,
+                'iSubChartId' => 352143,
+                'sIdeToken' => 'YWRywA',
+                'source' => 2,
+                'method' => 'dfm/place.list',
+                'param' => json_encode([
+                    'type' => 'place',
+                    'place' => $place,
+                    'hasPriceData' => true,
                 ]),
             ],
         ]);
