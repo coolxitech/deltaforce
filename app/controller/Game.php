@@ -244,13 +244,14 @@ class Game
 
     public function logs(): Json
     {
-        $params = Request::only(['openid', 'access_token', 'type']);
+        $params = Request::only(['openid', 'access_token', 'type', 'page']);
         $accessType = Request::header('acctype');
         if (empty($params['openid']) || empty($params['access_token'])) {
             return Response::json(-1, '缺少参数');
         }
 
         $type = $params['type'] ?? 1;
+        $page = (int) $params['page'] ?? 1;
         $cookie = $this->createCookie($params['openid'], $params['access_token'], empty($accessType) || !($accessType === 'wx'));
         $response = $this->client->request('POST', 'https://comm.ams.game.qq.com/ide/', [
             'form_params' => [
@@ -258,6 +259,7 @@ class Game
                 'iSubChartId' => 319386,
                 'sIdeToken' => 'zMemOt',
                 'type' => $type,
+                'page' => $page,
             ],
             'cookies' => $cookie,
         ]);
