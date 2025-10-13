@@ -11,3 +11,4 @@ Thumbs.db
 /.buildpath
 /.project
 /public/df.db
+/.php-cs-fixer.cache
