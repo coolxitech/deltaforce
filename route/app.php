@@ -35,3 +35,16 @@ Route::group('wegame', function () {
     Route::rule('gift', 'Wegame/gift');
     Route::rule('card', 'Wegame/card');
 });
+Route::group('pioneer', function () {
+    Route::group('qq', function () {
+        Route::rule('sig', 'Pioneer/getQrSig');
+        Route::rule('status', 'Pioneer/getAction');
+        Route::rule('access', 'Pioneer/getAccessToken');
+    });
+    Route::group('wechat', function () {
+        Route::rule('login', 'Pioneer/login');
+        Route::rule('status', 'Pioneer/status');
+        Route::rule('access', 'Pioneer/getWechatAccessToken');
+    });
+    Route::rule('list', 'Pioneer/getGameTestList');
+});
