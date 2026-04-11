@@ -35,7 +35,7 @@ class QQ
     {
         $response = $this->client->request('GET', 'https://xui.ptlogin2.qq.com/cgi-bin/xlogin', [
             'query' => [
-                'appid' => 716027609,
+                'appid' => APPID,
                 'daid' => 383,
                 'style' => 33,
                 'login_text' => '登录',
@@ -260,10 +260,4 @@ class QQ
         return Response::json(0, '更新成功');
     }
 
-
-    private function getCookieValue($name)
-    {
-        $cookies = array_column($this->cookie->toArray(), 'Value', 'Name');
-        return $cookies[$name] ?? null;
-    }
 }

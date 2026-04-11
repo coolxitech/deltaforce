@@ -53,7 +53,7 @@ class QQSafe
         }
 
         $result = $response->getBody()->getContents();
-        $sig = $this->getCookieValue('qrsig');
+        $sig = getCookieValue($this->cookie, 'qrsig');
         $cookies = $this->cookie->toArray();
         $cookie = [];
         foreach ($cookies as $value) {
@@ -63,7 +63,7 @@ class QQSafe
             'qrSig' => $sig,
             'image' => base64_encode($result),
             'token' => getQrToken($sig),
-            'loginSig' => $this->getCookieValue('pt_login_sig'),
+            'loginSig' => getCookieValue($this->cookie, 'pt_login_sig'),
             'cookie' => $cookie,
         ]);
     }
