@@ -19,7 +19,7 @@ class Game
         $httpVersion = $http2Supported ? 2.0 : 1.1;
         $this->client = new Client([
             'verify' => false,
-            'version' => $httpVersion,
+            'version' => 1.1,
         ]);
     }
 

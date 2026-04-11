@@ -64,7 +64,7 @@ class QQ
         return Response::json(0, '获取成功', [
             'qrSig' => $sig,
             'image' => base64_encode($result),
-            'token' => $this->getQrToken($sig),
+            'token' => getQrToken($sig),
             'loginSig' => $this->getCookieValue('pt_login_sig'),
             'cookie' => $cookie,
         ]);
@@ -89,17 +89,6 @@ class QQ
             ],
         ]);
         return $response->getStatusCode() === 200;
-    }
-
-    public function getQrToken(string $qrSig): int
-    {
-        $len = strlen($qrSig);
-        $hash = 0;
-        for ($i = 0; $i < $len; $i++) {
-            $hash += (($hash << 5) & 2147483647) + ord($qrSig[$i]) & 2147483647;
-            $hash &= 2147483647;
-        }
-        return $hash & 2147483647;
     }
 
     public function getAction(string $qrToken, string $qrSig, string $loginSig): Json

@@ -62,7 +62,7 @@ class QQSafe
         return Response::json(0, '获取成功', [
             'qrSig' => $sig,
             'image' => base64_encode($result),
-            'token' => $this->getQrToken($sig),
+            'token' => getQrToken($sig),
             'loginSig' => $this->getCookieValue('pt_login_sig'),
             'cookie' => $cookie,
         ]);
