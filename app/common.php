@@ -10,13 +10,13 @@ function getMicroTime(): int
 
 function getQrToken(string $qrSig): int
 {
-    $len = strlen($qrSig);
     $hash = 0;
-    for ($i = 0; $i < $len; $i++) {
-        $hash += (($hash << 5) & 2147483647) + ord($qrSig[$i]) & 2147483647;
-        $hash &= 2147483647;
+
+    for ($i = 0, $len = strlen($qrSig); $i < $len; $i++) {
+        $hash += ($hash << 5) + ord($qrSig[$i]);
+        $hash &= 0xFFFFFFFF;
     }
-    return $hash & 2147483647;
+    return $hash & 0x7FFFFFFF;
 }
 
 function getGTK(string $sKey): int
@@ -43,4 +43,10 @@ function createCookie(string $openId, string $accessToken, string $gsCode): Cook
         'gs_id' => $openId,
         'gs_code' => $gsCode,
     ], '.qq.com');
+}
+
+function getCookieValue(CookieJar $cookie, string|int $name)
+{
+    $cookies = array_column($cookie->toArray(), 'Value', 'Name');
+    return $cookies[$name] ?? null;
 }
