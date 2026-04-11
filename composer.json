@@ -48,21 +48,8 @@
     },
     "repositories": [
         {
-            "description": "官方镜像",
             "type": "composer",
-            "url": "https://repo.packagist.org",
-            "canonical": false
-        },
-        {
-            "description": "阿里云镜像",
-            "type": "composer",
-            "url": "https://mirrors.aliyun.com/composer/",
-            "canonical": false
-        },
-        {
-            "description": "腾讯云镜像",
-            "type": "composer",
-            "url": "https://mirrors.cloud.tencent.com/composer/",
+            "url": "https://packagist.mirrors.sjtug.sjtu.edu.cn",
             "canonical": false
         }
     ],
