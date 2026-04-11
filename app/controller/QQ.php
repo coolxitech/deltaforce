@@ -31,45 +31,6 @@ class QQ
         ]);
     }
 
-    public function getQrSig()
-    {
-        if (!$this->getLoginToken()) {
-            throw new Exception('LoginToken获取失败', -1);
-        }
-        $response = $this->client->request('GET', 'https://xui.ptlogin2.qq.com/ssl/ptqrshow', [
-            'query' => [
-                'appid' => 716027609,
-                'e' => 2,
-                'l' => 'M',
-                's' => 3,
-                'd' => 72,
-                'v' => 4,
-                't' => 0.6142752744667854,
-                'daid' => 383,
-                'pt_3rd_aid' => APPID,
-                'u1' => 'https://graph.qq.com/oauth2.0/login_jump',
-            ],
-        ]);
-        if ($response->getStatusCode() != 200) {
-            return Response::json(-1, '获取失败');
-        }
-
-        $result = $response->getBody()->getContents();
-        $sig = $this->getCookieValue('qrsig');
-        $cookies = $this->cookie->toArray();
-        $cookie = [];
-        foreach ($cookies as $value) {
-            $cookie[$value['Name']] = $value['Value'];
-        }
-        return Response::json(0, '获取成功', [
-            'qrSig' => $sig,
-            'image' => base64_encode($result),
-            'token' => getQrToken($sig),
-            'loginSig' => $this->getCookieValue('pt_login_sig'),
-            'cookie' => $cookie,
-        ]);
-    }
-
     public function getLoginToken(): bool
     {
         $response = $this->client->request('GET', 'https://xui.ptlogin2.qq.com/cgi-bin/xlogin', [
@@ -210,7 +171,7 @@ class QQ
                 'src' => 1,
                 'update_auth' => 1,
                 'openapi' => 1010,
-                'g_tk' => $this->getGtk($params['p_skey']),
+                'g_tk' => getGtk($params['p_skey']),
                 'auth_time' => time(),
                 'ui' => '979D48F3-6CE2-4E95-A789-3BD3187648B6',
             ],
@@ -304,21 +265,5 @@ class QQ
     {
         $cookies = array_column($this->cookie->toArray(), 'Value', 'Name');
         return $cookies[$name] ?? null;
-    }
-
-    private function getGTK(string $sKey): int
-    {
-        $hash = 5381;
-        $len = strlen($sKey);
-
-        for ($i = 0; $i < $len; $i++) {
-            // Using ord() to get ASCII value similar to charCodeAt()
-            // Left shift and addition operations are the same
-            $hash += ($hash << 5) + ord($sKey[$i]);
-            // Ensure 32-bit integer precision by applying bitwise AND with 0x7fffffff
-            $hash = $hash & 0x7fffffff;
-        }
-
-        return $hash & 0x7fffffff;
     }
 }

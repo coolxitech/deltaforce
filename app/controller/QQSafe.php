@@ -211,7 +211,7 @@ class QQSafe
                 'src' => 1,
                 'update_auth' => 1,
                 'openapi' => 1010,
-                'g_tk' => $this->getGtk($params['p_skey']),
+                'g_tk' => getGtk($params['p_skey']),
                 'auth_time' => time(),
                 'ui' => '8414A4DC-B157-42EE-84AE-84477CD7832A',
             ],
@@ -261,7 +261,7 @@ class QQSafe
         if (empty($params['openid']) || empty($params['access_token'])) {
             return Response::json(-1, '缺少参数');
         }
-        $cookie = $this->createCookie($params['openid'], $params['access_token'], $params['code']);
+        $cookie = createCookie($params['openid'], $params['access_token'], $params['code']);
         $response = $this->client->request('GET', 'https://gamesafe.qq.com/api/proxy/punish_query', [
             'query' => [
                 'query_type' => 4,
@@ -305,31 +305,5 @@ class QQSafe
     {
         $cookies = array_column($this->cookie->toArray(), 'Value', 'Name');
         return $cookies[$name] ?? null;
-    }
-
-    private function getGTK(string $sKey): int
-    {
-        $hash = 5381;
-        $len = strlen($sKey);
-
-        for ($i = 0; $i < $len; $i++) {
-            // Using ord() to get ASCII value similar to charCodeAt()
-            // Left shift and addition operations are the same
-            $hash += ($hash << 5) + ord($sKey[$i]);
-            // Ensure 32-bit integer precision by applying bitwise AND with 0x7fffffff
-            $hash = $hash & 0x7fffffff;
-        }
-
-        return $hash & 0x7fffffff;
-    }
-
-    private function createCookie(string $openId, string $accessToken, string $gsCode): CookieJar
-    {
-        return CookieJar::fromArray([
-            'openid' => $openId,
-            'access_token' => $accessToken,
-            'gs_id' => $openId,
-            'gs_code' => $gsCode,
-        ], '.qq.com');
     }
 }
