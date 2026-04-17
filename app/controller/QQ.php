@@ -31,7 +31,46 @@ class QQ
         ]);
     }
 
-    public function getLoginToken(): bool
+    public function getQrSig(): Json
+    {
+        if (!$this->getLoginToken()) {
+            throw new Exception('LoginToken获取失败', -1);
+        }
+        $response = $this->client->request('GET', 'https://xui.ptlogin2.qq.com/ssl/ptqrshow', [
+            'query' => [
+                'appid' => 716027609,
+                'e' => 2,
+                'l' => 'M',
+                's' => 3,
+                'd' => 72,
+                'v' => 4,
+                't' => 0.6142752744667854,
+                'daid' => 383,
+                'pt_3rd_aid' => APPID,
+                'u1' => 'https://graph.qq.com/oauth2.0/login_jump',
+            ],
+        ]);
+        if ($response->getStatusCode() != 200) {
+            return Response::json(-1, '获取失败');
+        }
+
+        $result = $response->getBody()->getContents();
+        $sig = getCookieValue($this->cookie, 'qrsig');
+        $cookies = $this->cookie->toArray();
+        $cookie = [];
+        foreach ($cookies as $value) {
+            $cookie[$value['Name']] = $value['Value'];
+        }
+        return Response::json(0, '获取成功', [
+            'qrSig' => $sig,
+            'image' => base64_encode($result),
+            'token' => getQrToken($sig),
+            'loginSig' => getCookieValue($this->cookie, 'pt_login_sig'),
+            'cookie' => $cookie,
+        ]);
+    }
+
+    private function getLoginToken(): bool
     {
         $response = $this->client->request('GET', 'https://xui.ptlogin2.qq.com/cgi-bin/xlogin', [
             'query' => [
