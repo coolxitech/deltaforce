@@ -61,7 +61,6 @@ class QQ
         foreach ($cookies as $value) {
             $cookie[$value['Name']] = $value['Value'];
         }
-        dump($cookies);
         return Response::json(0, '获取成功', [
             'qrSig' => $sig,
             'image' => base64_encode($result),
