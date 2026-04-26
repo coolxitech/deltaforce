@@ -353,12 +353,20 @@ class Game
                 : $this->normalizeCaliberCode($weaponData['gunDetail']['caliber']);
             $weaponData['gunDetail']['caliber'] = $caliber;
             $currentAmmoConfig = $ammoConfig[$caliber] ?? [];
+            $ammoConfigByObjectId = [];
+            foreach ($currentAmmoConfig as $item) {
+                if (isset($item['objectID'])) {
+                    $ammoConfigByObjectId[(string) $item['objectID']] = $item;
+                }
+            }
 
-            $weaponData['gunDetail']['ammo'] = array_map(function ($ammo, $key) use ($currentAmmoConfig) {
+            $weaponData['gunDetail']['ammo'] = array_map(function ($ammo, $key) use ($currentAmmoConfig, $ammoConfigByObjectId) {
+                $ammoObjectId = (string) ($ammo['objectID'] ?? '');
+                $config = $ammoConfigByObjectId[$ammoObjectId] ?? ($currentAmmoConfig[$key] ?? []);
                 return [
                     'objectID' => $ammo['objectID'],
-                    'name' => $currentAmmoConfig[$key]['name'] ?? '',
-                    'grade' => $currentAmmoConfig[$key]['grade'] ?? '',
+                    'name' => $config['name'] ?? '',
+                    'grade' => $config['grade'] ?? '',
                 ];
             }, $weaponData['gunDetail']['ammo'], array_keys($weaponData['gunDetail']['ammo']));
 
