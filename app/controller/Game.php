@@ -492,6 +492,10 @@ class Game
     public function quartermaster()
     {
         $params = $this->getRequiredParams(['openid', 'access_token']);
+        $type = match (Request::param('type')) {
+            '', null,'secret' => 1,
+            'market' => 3,
+        };
         if ($params === null) {
             return Response::json(-1, '缺少参数');
         }
@@ -500,7 +504,7 @@ class Game
             'iChartId' => 530479,
             'iSubChartId' => 530479,
             'sIdeToken' => 'SwgEeH',
-            'action' => 1,
+            'action' => $type,
         ], $cookie);
         if ($data['ret'] !== 0) {
             return Response::json(-1, '获取失败,检查鉴权是否过期');
